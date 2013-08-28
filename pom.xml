@@ -24,7 +24,7 @@
 		<dependency>
 		  	<groupId>com.stackify</groupId>
   			<artifactId>stackify-api</artifactId>
-  			<version>1.0.0-SNAPSHOT</version>
+  			<version>1.0.0</version>
 		</dependency>
 		 
 		<!-- Runtime dependencies -->
