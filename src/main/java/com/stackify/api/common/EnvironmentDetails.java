@@ -31,11 +31,10 @@ public class EnvironmentDetails {
 	/**
 	 * Creates an environment details object with system information
 	 * @param application The configured application name
-	 * @param location The configured application location
 	 * @param environment The configured application environment
 	 * @return The EnvironmentDetail object
 	 */
-	public static EnvironmentDetail getEnvironmentDetail(final String application, final String location, final String environment) {
+	public static EnvironmentDetail getEnvironmentDetail(final String application, final String environment) {
 		
 		// lookup the hostname
 
@@ -59,7 +58,6 @@ public class EnvironmentDetails {
 		environmentBuilder.deviceName(hostName);
 		environmentBuilder.appLocation(currentPath);
 		environmentBuilder.configuredAppName(application);
-		environmentBuilder.configuredLocationName(location);
 		environmentBuilder.configuredEnvironmentName(environment);
 		
 		return environmentBuilder.build();

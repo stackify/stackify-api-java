@@ -43,7 +43,6 @@ public class EnvironmentDetailsTest {
 	@Test
 	public void testGetEnvironmentDetail() throws UnknownHostException {
 		String application = "application";
-		String location = "location";
 		String environment = "environment";
 		String hostName = "hostName";
 		
@@ -53,7 +52,7 @@ public class EnvironmentDetailsTest {
 		PowerMockito.mockStatic(InetAddress.class);
 		PowerMockito.when(InetAddress.getLocalHost()).thenReturn(inetAddress);
 		
-		EnvironmentDetail env = EnvironmentDetails.getEnvironmentDetail(application, location, environment);
+		EnvironmentDetail env = EnvironmentDetails.getEnvironmentDetail(application, environment);
 		
 		Assert.assertNotNull(env);
 		
@@ -61,7 +60,6 @@ public class EnvironmentDetailsTest {
 		Assert.assertNotNull(env.getAppLocation());
 		Assert.assertNull(env.getAppName());
 		Assert.assertEquals(application, env.getConfiguredAppName());
-		Assert.assertEquals(location, env.getConfiguredLocationName());
 		Assert.assertEquals(environment, env.getConfiguredEnvironmentName());
 	}
 	
@@ -72,13 +70,12 @@ public class EnvironmentDetailsTest {
 	@Test
 	public void testGetEnvironmentDetailHostnameException() throws UnknownHostException {
 		String application = "application";
-		String location = "location";
 		String environment = "environment";
 				
 		PowerMockito.mockStatic(InetAddress.class);
 		PowerMockito.when(InetAddress.getLocalHost()).thenThrow(new RuntimeException());
 		
-		EnvironmentDetail env = EnvironmentDetails.getEnvironmentDetail(application, location, environment);
+		EnvironmentDetail env = EnvironmentDetails.getEnvironmentDetail(application, environment);
 		
 		Assert.assertNotNull(env);
 		
@@ -86,7 +83,6 @@ public class EnvironmentDetailsTest {
 		Assert.assertNotNull(env.getAppLocation());
 		Assert.assertNull(env.getAppName());
 		Assert.assertEquals(application, env.getConfiguredAppName());
-		Assert.assertEquals(location, env.getConfiguredLocationName());
 		Assert.assertEquals(environment, env.getConfiguredEnvironmentName());
 	}
 }
