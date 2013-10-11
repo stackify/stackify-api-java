@@ -29,11 +29,68 @@ import com.stackify.api.TraceFrame;
 public class Throwables {
 
 	/**
+	 * Returns the Throwable's cause chain as a list. The first entry is the Throwable followed by the cause chain.
+	 * @param throwable The Throwable
+	 * @return The Throwable and its cause chain
+	 */
+	public static List<Throwable> getCausalChain(final Throwable throwable) {
+		if (throwable == null) {
+			throw new NullPointerException("Throwable is null");
+		}
+		
+		List<Throwable> causes = new ArrayList<Throwable>();
+		causes.add(throwable);
+		
+		Throwable cause = throwable.getCause();
+		
+		while ((cause != null) && (!causes.contains(cause))) {
+			causes.add(cause);
+			cause = cause.getCause();
+		}
+		
+		return causes;
+	}
+	
+	/**
 	 * Converts a Throwable to an ErrorItem
 	 * @param t The Throwable to be converted
 	 * @return The ErrorItem
 	 */
 	public static ErrorItem toErrorItem(final Throwable t) {
+		
+		// get a flat list of the throwable and the causal chain
+		
+		List<Throwable> throwables = Throwables.getCausalChain(t);
+
+		// create and populate builders for all throwables
+		
+		List<ErrorItem.Builder> builders = new ArrayList<ErrorItem.Builder>(throwables.size());
+		
+		for (Throwable throwable : throwables) {
+			ErrorItem.Builder builder = toErrorItemBuilderWithoutCause(throwable);
+			builders.add(builder);
+		}
+		
+		// attach child errors to their parent in reverse order
+		
+		for (int i = builders.size() - 1; 0 < i; --i) {
+			ErrorItem.Builder parent = builders.get(i - 1);
+			ErrorItem.Builder child = builders.get(i);
+			
+			parent.innerError(child.build());
+		}
+		
+		// return the assembled original error
+		
+		return builders.get(0).build();
+	}
+	
+	/**
+	 * Converts a Throwable to an ErrorItem.Builder and ignores the cause
+	 * @param t The Throwable to be converted
+	 * @return The ErrorItem.Builder without the innerError populated
+	 */
+	private static ErrorItem.Builder toErrorItemBuilderWithoutCause(final Throwable t) {
 		ErrorItem.Builder builder = ErrorItem.newBuilder();
 		builder.message(t.getMessage());
 		builder.errorType(t.getClass().getCanonicalName());
@@ -53,16 +110,8 @@ public class Throwables {
 		}
 		
 		builder.stackTrace(stackFrames);
-
-		Throwable cause = t.getCause();
 		
-		if (cause != null) {
-			if (!cause.equals(t)) {
-				builder.innerError(Throwables.toErrorItem(cause));
-			}
-		}
-
-		return builder.build();
+		return builder;
 	}
 	
 	/**

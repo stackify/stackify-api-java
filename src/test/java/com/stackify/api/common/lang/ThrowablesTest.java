@@ -23,7 +23,6 @@ import org.mockito.Mockito;
 
 import com.stackify.api.ErrorItem;
 import com.stackify.api.TraceFrame;
-import com.stackify.api.common.lang.Throwables;
 
 /**
  * Throwables JUnit Test
@@ -32,6 +31,60 @@ import com.stackify.api.common.lang.Throwables;
  */
 public class ThrowablesTest {
 
+	/**
+	 * testGetCausalChainWithNull
+	 */
+	@Test(expected = NullPointerException.class)
+	public void testGetCausalChainWithNull() {
+		Throwables.getCausalChain(null);
+	}
+	
+	/**
+	 * testGetCausalChainWithoutCause
+	 */
+	@Test
+	public void testGetCausalChainWithoutCause() {
+		Throwable t = new NullPointerException();
+		
+		List<Throwable> throwables = Throwables.getCausalChain(t);
+		Assert.assertNotNull(throwables);
+		Assert.assertEquals(1, throwables.size());
+		Assert.assertEquals(t, throwables.get(0));
+	}
+	
+	/**
+	 * testGetCausalChainWithCause
+	 */
+	@Test
+	public void testGetCausalChainWithCause() {
+		Throwable c = new NullPointerException();
+		Throwable t = new RuntimeException(c);
+		
+		List<Throwable> throwables = Throwables.getCausalChain(t);
+		Assert.assertNotNull(throwables);
+		Assert.assertEquals(2, throwables.size());
+		Assert.assertEquals(t, throwables.get(0));
+		Assert.assertEquals(c, throwables.get(1));
+	}
+	
+	/**
+	 * testGetCausalChainWithSelfCausation
+	 */
+	@Test
+	public void testGetCausalChainWithSelfCausation() {
+		Throwable c2 = new RuntimeException();
+		Throwable c1 = new RuntimeException(c2);
+		c2.initCause(c1);
+		Throwable t = new RuntimeException(c1);
+		
+		List<Throwable> throwables = Throwables.getCausalChain(t);
+		Assert.assertNotNull(throwables);
+		Assert.assertEquals(3, throwables.size());
+		Assert.assertEquals(t, throwables.get(0));
+		Assert.assertEquals(c1, throwables.get(1));
+		Assert.assertEquals(c2, throwables.get(2));
+	}
+	
 	/**
 	 * testToErrorDetail
 	 */
@@ -126,5 +179,37 @@ public class ThrowablesTest {
 		Assert.assertNotNull(stackTrace);
 		Assert.assertTrue(stackTrace.isEmpty());
 		Assert.assertNull(errorDetail.getInnerError());
+	}
+	
+	/**
+	 * testToErrorDetailWithSubcause
+	 */
+	@Test
+	public void testToErrorDetailWithSubcause() {
+		String message = "message";
+		String causeMessage = "causeMessage";
+		String subcauseMessage = "subcauseMessage";
+		Throwable subcause = new NullPointerException(subcauseMessage);
+		Throwable cause = new UnsupportedOperationException(causeMessage, subcause);
+		Throwable throwable = new RuntimeException(message, cause);
+		
+		ErrorItem errorDetail = Throwables.toErrorItem(throwable);
+		
+		Assert.assertNotNull(errorDetail);
+		
+		Assert.assertEquals(message, errorDetail.getMessage());
+		Assert.assertEquals("java.lang.RuntimeException", errorDetail.getErrorType());
+		
+		List<TraceFrame> stackTrace = errorDetail.getStackTrace();
+		Assert.assertNotNull(stackTrace);
+		Assert.assertTrue(!stackTrace.isEmpty());
+	
+		Assert.assertEquals(causeMessage, errorDetail.getInnerError().getMessage());
+		Assert.assertEquals("java.lang.UnsupportedOperationException", errorDetail.getInnerError().getErrorType());
+
+		Assert.assertEquals(subcauseMessage, errorDetail.getInnerError().getInnerError().getMessage());
+		Assert.assertEquals("java.lang.NullPointerException", errorDetail.getInnerError().getInnerError().getErrorType());
+
+		Assert.assertNull(errorDetail.getInnerError().getInnerError().getInnerError());
 	}
 }
