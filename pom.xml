@@ -17,6 +17,10 @@
 		<url>https://bitbucket.org/stackify/stackify-api-common</url>
 	</scm>
 
+    <properties>
+        <java.version>1.6</java.version>
+    </properties>
+
 	<dependencies>
 	
 		<!-- Compile time dependencies -->
