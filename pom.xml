@@ -9,7 +9,7 @@
 	
 	<groupId>com.stackify</groupId>
 	<artifactId>stackify-api-common</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<name>Stackify API Common</name>
 	<scm>
 		<connection>scm:git:git@bitbucket.org:stackify/stackify-api-common.git</connection>
