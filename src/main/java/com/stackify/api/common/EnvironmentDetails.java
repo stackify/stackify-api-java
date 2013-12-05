@@ -16,8 +16,6 @@
 package com.stackify.api.common;
 
 import java.net.InetAddress;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.stackify.api.EnvironmentDetail;
 
@@ -49,8 +47,7 @@ public class EnvironmentDetails {
 		
 		// lookup the current path
 		
-		Path currentRelativePath = Paths.get("");
-		String currentPath = currentRelativePath.toAbsolutePath().toString();
+		String currentPath = System.getProperty("user.dir");
 		
 		// build the environment details
 		
