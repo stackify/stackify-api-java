@@ -53,10 +53,11 @@ public class Throwables {
 	
 	/**
 	 * Converts a Throwable to an ErrorItem
+	 * @param logMessage The log message (can be null)
 	 * @param t The Throwable to be converted
 	 * @return The ErrorItem
 	 */
-	public static ErrorItem toErrorItem(final Throwable t) {
+	public static ErrorItem toErrorItem(final String logMessage, final Throwable t) {
 		
 		// get a flat list of the throwable and the causal chain
 		
@@ -66,9 +67,14 @@ public class Throwables {
 		
 		List<ErrorItem.Builder> builders = new ArrayList<ErrorItem.Builder>(throwables.size());
 		
-		for (Throwable throwable : throwables) {
-			ErrorItem.Builder builder = toErrorItemBuilderWithoutCause(throwable);
-			builders.add(builder);
+		for (int i = 0; i < throwables.size(); ++i) {
+			if (i == 0) {
+				ErrorItem.Builder builder = toErrorItemBuilderWithoutCause(logMessage, throwables.get(i));
+				builders.add(builder);
+			} else {
+				ErrorItem.Builder builder = toErrorItemBuilderWithoutCause(null, throwables.get(i));
+				builders.add(builder);
+			}
 		}
 		
 		// attach child errors to their parent in reverse order
@@ -86,13 +92,23 @@ public class Throwables {
 	}
 	
 	/**
+	 * Converts a Throwable to an ErrorItem
+	 * @param t The Throwable to be converted
+	 * @return The ErrorItem
+	 */
+	public static ErrorItem toErrorItem(final Throwable t) {
+		return toErrorItem(null, t);
+	}
+	
+	/**
 	 * Converts a Throwable to an ErrorItem.Builder and ignores the cause
+	 * @param logMessage The log message
 	 * @param t The Throwable to be converted
 	 * @return The ErrorItem.Builder without the innerError populated
 	 */
-	private static ErrorItem.Builder toErrorItemBuilderWithoutCause(final Throwable t) {
+	private static ErrorItem.Builder toErrorItemBuilderWithoutCause(final String logMessage, final Throwable t) {
 		ErrorItem.Builder builder = ErrorItem.newBuilder();
-		builder.message(t.getMessage());
+		builder.message(toErrorItemMessage(logMessage, t.getMessage()));
 		builder.errorType(t.getClass().getCanonicalName());
 		
 		List<TraceFrame> stackFrames = new ArrayList<TraceFrame>();
@@ -112,6 +128,31 @@ public class Throwables {
 		builder.stackTrace(stackFrames);
 		
 		return builder;
+	}
+	
+	/**
+	 * Constructs the error item message from the log message and the throwable's message
+	 * @param logMessage The log message (can be null)
+	 * @param throwableMessage The throwable's message (can be null)
+	 * @return The error item message
+	 */
+	private static String toErrorItemMessage(final String logMessage, final String throwableMessage) {
+		
+		StringBuilder sb = new StringBuilder();
+				
+		if ((throwableMessage != null) && (!throwableMessage.isEmpty())) {
+			sb.append(throwableMessage);
+			
+			if ((logMessage != null) && (!logMessage.isEmpty())) {
+				sb.append(" (");
+				sb.append(logMessage);
+				sb.append(")");
+			}			
+		} else {
+			sb.append(logMessage);
+		}
+
+		return sb.toString();
 	}
 	
 	/**

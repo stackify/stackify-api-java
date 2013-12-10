@@ -113,6 +113,34 @@ public class ThrowablesTest {
 	}
 	
 	/**
+	 * testToErrorDetailWithLogMessage
+	 */
+	@Test
+	public void testToErrorDetailWithLogMessage() {
+		String throwableMessage = "Throwable message";
+		String logMessage = "Log message";
+		String causeMessage = "causeMessage";
+		Throwable cause = new NullPointerException(causeMessage);
+		Throwable throwable = new RuntimeException(throwableMessage, cause);
+		
+		ErrorItem errorDetail = Throwables.toErrorItem(logMessage, throwable);
+		
+		Assert.assertNotNull(errorDetail);
+		
+		Assert.assertEquals(throwableMessage + " (" + logMessage + ")", errorDetail.getMessage());
+		Assert.assertEquals("java.lang.RuntimeException", errorDetail.getErrorType());
+		
+		List<TraceFrame> stackTrace = errorDetail.getStackTrace();
+		Assert.assertNotNull(stackTrace);
+		Assert.assertTrue(!stackTrace.isEmpty());
+	
+		Assert.assertEquals(causeMessage, errorDetail.getInnerError().getMessage());
+		Assert.assertEquals("java.lang.NullPointerException", errorDetail.getInnerError().getErrorType());
+
+		Assert.assertNull(errorDetail.getInnerError().getInnerError());
+	}
+	
+	/**
 	 * testToErrorDetailWithNullStackTrace
 	 */
 	@Test
