@@ -43,11 +43,43 @@ import com.stackify.api.json.StackifyErrorConverter;
 public class StackifyErrorSenderTest {
 
 	/**
+	 * testConstructorWithNullApiUrl
+	 */
+	@Test(expected = NullPointerException.class)
+	public void testConstructorWithNullApiUrl() {
+		new StackifyErrorSender(null, "apiKey", Mockito.mock(StackifyErrorConverter.class));
+	}
+	
+	/**
+	 * testConstructorWithEmptyApiUrl
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructorWithEmptyApiUrl() {
+		new StackifyErrorSender("", "apiKey", Mockito.mock(StackifyErrorConverter.class));
+	}
+	
+	/**
+	 * testConstructorWithNullApiKey
+	 */
+	@Test(expected = NullPointerException.class)
+	public void testConstructorWithNullApiKey() {
+		new StackifyErrorSender("apiUrl", null, Mockito.mock(StackifyErrorConverter.class));
+	}
+	
+	/**
+	 * testConstructorWithEmptyApiKey
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void testConstructorWithEmptyApiKey() {
+		new StackifyErrorSender("apiUrl", "", Mockito.mock(StackifyErrorConverter.class));
+	}
+	
+	/**
 	 * testConstructorWithNullConverter
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructorWithNullConverter() {
-		new StackifyErrorSender(null);
+		new StackifyErrorSender("apiUrl", "apiKey", null);
 	}
 	
 	/**
@@ -56,51 +88,7 @@ public class StackifyErrorSenderTest {
 	@Test
 	public void testConstructor() {
 		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		new StackifyErrorSender(converter);
-	}
-	
-	/**
-	 * testSendApiUrlNull
-	 * @throws IOException 
-	 */
-	@Test(expected = NullPointerException.class)
-	public void testSendApiUrlNull() throws IOException {
-		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		StackifyErrorSender sender = new StackifyErrorSender(converter);
-		sender.send(null, "apiKey", Collections.singletonList(StackifyError.newBuilder().build()));
-	}
-	
-	/**
-	 * testSendApiUrlEmpty
-	 * @throws IOException 
-	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void testSendApiUrlEmpty() throws IOException {
-		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		StackifyErrorSender sender = new StackifyErrorSender(converter);
-		sender.send("", "apiKey", Collections.singletonList(StackifyError.newBuilder().build()));
-	}
-	
-	/**
-	 * testSendApiKeyNull
-	 * @throws IOException 
-	 */
-	@Test(expected = NullPointerException.class)
-	public void testSendApiKeyNull() throws IOException {
-		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		StackifyErrorSender sender = new StackifyErrorSender(converter);
-		sender.send("apiUrl", null, Collections.singletonList(StackifyError.newBuilder().build()));
-	}
-	
-	/**
-	 * testSendApiKeyEmpty
-	 * @throws IOException 
-	 */
-	@Test(expected = IllegalArgumentException.class)
-	public void testSendApiKeyEmpty() throws IOException {
-		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		StackifyErrorSender sender = new StackifyErrorSender(converter);
-		sender.send("apiUrl", "", Collections.singletonList(StackifyError.newBuilder().build()));
+		new StackifyErrorSender("apiUrl", "apiKey", converter);
 	}
 	
 	/**
@@ -110,8 +98,8 @@ public class StackifyErrorSenderTest {
 	@Test(expected = NullPointerException.class)
 	public void testSendErrorsNull() throws IOException {
 		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		StackifyErrorSender sender = new StackifyErrorSender(converter);
-		sender.send("apiUrl", "apiKey", null);
+		StackifyErrorSender sender = new StackifyErrorSender("apiUrl", "apiKey", converter);
+		sender.send(null);
 	}
 	
 	/**
@@ -121,8 +109,8 @@ public class StackifyErrorSenderTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testSendErrorsEmpty() throws IOException {
 		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		StackifyErrorSender sender = new StackifyErrorSender(converter);
-		sender.send("apiUrl", "apiKey", new ArrayList<StackifyError>());
+		StackifyErrorSender sender = new StackifyErrorSender("apiUrl", "apiKey", converter);
+		sender.send(new ArrayList<StackifyError>());
 	}
 	
 	/**
@@ -132,7 +120,7 @@ public class StackifyErrorSenderTest {
 	@Test
 	public void testSend() throws Exception {
 		StackifyErrorConverter converter = Mockito.mock(StackifyErrorConverter.class);
-		StackifyErrorSender sender = new StackifyErrorSender(converter);
+		StackifyErrorSender sender = new StackifyErrorSender("apiUrl", "apiKey", converter);
 		
 		URL url = PowerMockito.mock(URL.class);
 		HttpURLConnection connection = PowerMockito.mock(HttpURLConnection.class);
@@ -142,7 +130,7 @@ public class StackifyErrorSenderTest {
 		PowerMockito.when(url.openConnection()).thenReturn(connection);
 		PowerMockito.when(connection.getOutputStream()).thenReturn(postBody);
 		
-		sender.send("apiUrl", "apiKey", Collections.singletonList(StackifyError.newBuilder().build()));
+		sender.send(Collections.singletonList(StackifyError.newBuilder().build()));
 		
 		Mockito.verify(converter).writeToStream(Mockito.anyList(), Mockito.any(OutputStream.class));
 		Mockito.verify(connection).getResponseCode();

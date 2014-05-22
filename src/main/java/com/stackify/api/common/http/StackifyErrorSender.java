@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+import com.google.common.base.Preconditions;
 import com.stackify.api.StackifyError;
 import com.stackify.api.json.StackifyErrorConverter;
 
@@ -34,46 +35,47 @@ import com.stackify.api.json.StackifyErrorConverter;
 public class StackifyErrorSender {
 
 	/**
+	 * The API URL
+	 */
+	private final String apiUrl;
+	
+	/**
+	 * The API key
+	 */
+	private final String apiKey;
+
+	/**
 	 * Writes Stackify errors to an output stream
 	 */
 	private final StackifyErrorConverter errorConverter;
 	
 	/**
 	 * Default constructor
+	 * @param apiUrl The API URL
+	 * @param apiKey The API key
+	 * @param errorWriter StackifyError to JSON Writer
 	 * @throws NullPointerException If errorWriter is null
 	 */
-	public StackifyErrorSender(final StackifyErrorConverter errorWriter) {
-		if (errorWriter == null) {
-			throw new NullPointerException("StackifyErrorConverter is null");
-		}
-		
+	public StackifyErrorSender(final String apiUrl, final String apiKey, final StackifyErrorConverter errorWriter) {
+		Preconditions.checkNotNull(errorWriter, "StackifyErrorConverter is null");
+		Preconditions.checkNotNull(apiUrl, "API URL is null");
+		Preconditions.checkArgument(!apiUrl.isEmpty(), "API URL is empty");
+		Preconditions.checkNotNull(apiKey, "API key is null");
+		Preconditions.checkArgument(!apiKey.isEmpty(), "API key is empty");
+
+		this.apiUrl = apiUrl;
+		this.apiKey = apiKey;
 		this.errorConverter = errorWriter;
 	}
 	
 	/**
 	 * Send the error to Stackify
-	 * @param error The error
+	 * @param errors The errors
 	 * @throws IOException If an I/O exception occurs.
 	 * @throws NullPointerException If apiUrl, apiKey, or errors is null
 	 * @throws IllegalArgumentException If apiUrl, apiKey, or errors is empty
 	 */
-	public int send(final String apiUrl, final String apiKey, final List<StackifyError> errors) throws IOException {
-		if (apiUrl == null) {
-			throw new NullPointerException("API URL is null");
-		}
-		
-		if (apiUrl.isEmpty()) {
-			throw new IllegalArgumentException("API URL is empty");
-		}
-		
-		if (apiKey == null) {
-			throw new NullPointerException("API key is null");
-		}
-		
-		if (apiKey.isEmpty()) {
-			throw new IllegalArgumentException("API key is empty");
-		}
-		
+	public int send(final List<StackifyError> errors) throws IOException {
 		if (errors == null) {
 			throw new NullPointerException("StackifyError list is null");
 		}
