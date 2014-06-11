@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stackify.api.common.http;
+package com.stackify.api.common.log;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,37 +22,43 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.AbstractScheduledService;
 
 /**
- * AsyncErrorSenderService
+ * LogSenderService
  * 
  * @author Eric Martin
  */
-public class AsyncErrorSenderService extends AbstractScheduledService {
+public class LogBackgroundService extends AbstractScheduledService {
 
 	/**
 	 * The service logger
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(AsyncErrorSenderService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LogBackgroundService.class);
 	
 	/**
 	 * The scheduler that determines delay timing after errors
 	 */
-	private final AsyncScheduler scheduler;
+	private final LogBackgroundServiceScheduler scheduler = new LogBackgroundServiceScheduler();
 	
 	/**
-	 * The async error sender
+	 * The LogMsg collector
 	 */
-	private final AsyncErrorSender asyncErrorSender;
-			
+	private final LogCollector collector;
+
+	/**
+	 * The LogMsgGroup HTTP sender
+	 */
+	private final LogSender sender;
+	
 	/**
 	 * Constructor
-	 * @param scheduler The scheduler that determines delay timing after errors
-	 * @param asyncErrorSender The asynchronous HTTP error sender
+	 * @param appIdentityService The application identity service
+	 * @param collector The LogMsg collector
+	 * @param sender The LogMsgGroup HTTP sender
 	 */
-	public AsyncErrorSenderService(final AsyncScheduler scheduler, final AsyncErrorSender asyncErrorSender) {
-		Preconditions.checkNotNull(scheduler, "AsyncScheduler can't be null");
-		Preconditions.checkNotNull(asyncErrorSender, "AsyncErrorSender can't be null");
-		this.scheduler = scheduler;
-		this.asyncErrorSender = asyncErrorSender;
+	public LogBackgroundService(final LogCollector collector, final LogSender sender) {
+		Preconditions.checkNotNull(collector);
+		Preconditions.checkNotNull(sender);
+		this.collector = collector;
+		this.sender = sender;
 	}
 		
 	/**
@@ -60,7 +66,7 @@ public class AsyncErrorSenderService extends AbstractScheduledService {
 	 */
 	@Override
 	protected String serviceName() {
-		return "Stackify_AsyncErrorSenderService";
+		return "Stackify_LogBackgroundService";
 	}
 
 	/**
@@ -72,24 +78,14 @@ public class AsyncErrorSenderService extends AbstractScheduledService {
 	}
 		
 	/**
-	 * @see com.google.common.util.concurrent.AbstractScheduledService#startUp()
-	 */
-	@Override
-	protected void startUp() throws Exception {
-		super.startUp();
-	}
-
-	/**
 	 * @see com.google.common.util.concurrent.AbstractScheduledService#shutDown()
 	 */
 	@Override
 	protected void shutDown() throws Exception {
-		LOGGER.debug("Shutting down Stackify_AsyncErrorSenderService");
-		
 		try {
-			asyncErrorSender.flush();
-		} catch (Exception e) {
-			LOGGER.info("Exception running Stackify_AsyncErrorSenderService", e);
+			collector.flush(sender);
+		} catch (Throwable t) {
+			LOGGER.info("Exception flushing log collector during shut down", t);
 		}
 		
 		super.shutDown();
@@ -101,11 +97,11 @@ public class AsyncErrorSenderService extends AbstractScheduledService {
 	@Override
 	protected void runOneIteration() {		
 		try {
-			HttpTransmissionStatus status = asyncErrorSender.flush();
-			scheduler.update(status);
-		} catch (Exception e) {
-			LOGGER.info("Exception running Stackify_AsyncErrorSenderService", e);
-			scheduler.update(HttpTransmissionStatus.ERROR);
+			int numSent = collector.flush(sender);
+			scheduler.update(numSent);
+		} catch (Throwable t) {
+			LOGGER.info("Exception running Stackify_LogBackgroundService", t);
+			scheduler.update(t);
 		}
 	}
 }

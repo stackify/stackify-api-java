@@ -15,25 +15,23 @@
  */
 package com.stackify.api.common.http;
 
+import java.net.HttpURLConnection;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 /**
- * HttpTransmissionStatus
+ * HttpException JUnit Test
  * @author Eric Martin
  */
-public enum HttpTransmissionStatus {
-
-	/**
-	 * OK
-	 */
-	OK,
+public class HttpExceptionTest {
 	
 	/**
-	 * Not authorized
+	 * testConstructor
 	 */
-	UNAUTHORIZED,
-	
-	/**
-	 * Error
-	 */
-	ERROR
-	
+	@Test
+	public void testConstructor() {
+		HttpException e = new HttpException(HttpURLConnection.HTTP_BAD_REQUEST);
+		Assert.assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, e.getStatusCode());
+	}
 }

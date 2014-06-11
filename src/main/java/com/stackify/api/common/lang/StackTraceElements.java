@@ -15,11 +15,6 @@
  */
 package com.stackify.api.common.lang;
 
-import java.net.URI;
-import java.net.URL;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
-
 import com.stackify.api.TraceFrame;
 
 /**
@@ -44,29 +39,7 @@ public class StackTraceElements {
 		
 		builder.method(element.getClassName() + "." + element.getMethodName());
 		
-		builder.libraryName(getLibraryName(element.getClassName()));
-						
 		return builder.build();
-	}
-	
-	/**
-	 * Gets the library name from the class name
-	 * @param className The class name
-	 * @return The library name (or null)
-	 */
-	private static String getLibraryName(final String className) {
-		try {
-			Class<?> clazz = Class.forName(className);
-			ProtectionDomain domain = clazz.getProtectionDomain();
-			CodeSource codeSource = domain.getCodeSource();
-			URL location = codeSource.getLocation();
-			URI uri = location.toURI();
-			return uri.toString();
-		} catch (Throwable t) {
-			// do nothing
-		}
-
-		return null;
 	}
 	
 	/**

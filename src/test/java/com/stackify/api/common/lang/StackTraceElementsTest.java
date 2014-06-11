@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.stackify.api.TraceFrame;
-import com.stackify.api.common.lang.StackTraceElements;
 
 /**
  * StackTraceElements JUnit Test
@@ -45,7 +44,6 @@ public class StackTraceElementsTest {
 		
 		Assert.assertEquals(declaringClass + "." + methodName, frame.getMethod());
 		Assert.assertEquals(fileName, frame.getCodeFileName());
-		Assert.assertEquals(Integer.valueOf(lineNumber), frame.getLineNum());
-		Assert.assertNotNull(frame.getLibraryName());		
+		Assert.assertEquals(Integer.valueOf(lineNumber), frame.getLineNum());	
 	}
 }
