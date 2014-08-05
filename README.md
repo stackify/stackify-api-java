@@ -1,6 +1,7 @@
 # stackify-api-common
 
 [![Build Status](https://travis-ci.org/stackify/stackify-api-common.png)](https://travis-ci.org/stackify/stackify-api-common)
+[![Coverage Status](https://coveralls.io/repos/stackify/stackify-api-common/badge.png?branch=master)](https://coveralls.io/r/stackify/stackify-api-common?branch=master)
 
 Stackify API Common
 
