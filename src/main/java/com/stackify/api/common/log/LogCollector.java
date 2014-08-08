@@ -117,16 +117,19 @@ public class LogCollector {
 				groupBuilder.platform("java");
 				groupBuilder.logger(logger);
 				groupBuilder.serverName(envDetail.getDeviceName());
+				groupBuilder.env(envDetail.getConfiguredEnvironmentName());
+				groupBuilder.appName(envDetail.getConfiguredAppName());
+				groupBuilder.appLoc(envDetail.getAppLocation());
 				
 				if (appIdentity.isPresent()) {
 					groupBuilder.cdId(appIdentity.get().getDeviceId());
 					groupBuilder.cdAppId(appIdentity.get().getDeviceAppId());
 					groupBuilder.appNameId(appIdentity.get().getAppNameId());
 					groupBuilder.envId(appIdentity.get().getEnvId());
-				} else {
-					groupBuilder.appName(envDetail.getConfiguredAppName());
-					groupBuilder.appLoc(envDetail.getAppLocation());
-					groupBuilder.env(envDetail.getConfiguredEnvironmentName());
+					
+					if ((appIdentity.get().getAppName() != null) && (0 < appIdentity.get().getAppName().length())) {
+						groupBuilder.appName(appIdentity.get().getAppName());
+					}
 				}
 	
 				groupBuilder.msgs(batch);

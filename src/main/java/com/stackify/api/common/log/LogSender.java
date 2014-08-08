@@ -65,8 +65,6 @@ public class LogSender {
 		
 		// convert to json bytes
 		
-		String jsonString = objectMapper.writer().writeValueAsString(group);
-		
 		byte[] jsonBytes = objectMapper.writer().writeValueAsBytes(group);
 		
 		// post to stackify
@@ -83,43 +81,5 @@ public class LogSender {
 		}
 		
 		return statusCode;
-		
-		/*
-		HttpURLConnection connection = null;
-		
-		try {
-			URL url = new URL(apiConfig.getApiUrl() + "/Log/Save");
-			
-			connection = (HttpURLConnection) url.openConnection();
-			connection.setDoInput(true);
-			connection.setDoOutput(true);
-			connection.setRequestProperty("Content-Type", "application/json");
-			connection.setRequestProperty("Content-Encoding", "gzip");
-			connection.setRequestProperty("X-Stackify-Key", apiConfig.getApiKey());
-			connection.setRequestProperty("X-Stackify-PV", "V1");
-			connection.setRequestMethod("POST");
-			connection.setConnectTimeout(5000);
-			connection.setReadTimeout(5000);
-						
-			OutputStream stream = new BufferedOutputStream(new GZIPOutputStream(connection.getOutputStream()));
-			
-			try {
-				objectMapper.writer().writeValue(stream, group);
-			} catch (JsonGenerationException e) {
-				throw new RuntimeException(e);
-			} catch (JsonMappingException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-			
-			stream.flush();
-			stream.close();
-									
-			return connection.getResponseCode();
-		} finally {
-			HttpUrlConnections.readAndCloseInputStreams(connection);
-		}
-		*/
 	}
 }
