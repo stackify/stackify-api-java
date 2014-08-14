@@ -126,6 +126,7 @@ public class LogCollector {
 					groupBuilder.cdAppId(appIdentity.get().getDeviceAppId());
 					groupBuilder.appNameId(appIdentity.get().getAppNameId());
 					groupBuilder.envId(appIdentity.get().getEnvId());
+					groupBuilder.env(appIdentity.get().getEnv());
 					
 					if ((appIdentity.get().getAppName() != null) && (0 < appIdentity.get().getAppName().length())) {
 						groupBuilder.appName(appIdentity.get().getAppName());
