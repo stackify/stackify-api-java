@@ -25,16 +25,16 @@ import org.junit.Test;
 public class ApiConfigurationsTest {
 
 	/**
-	 * testExplicit
+	 * fromPropertiesWithOverrides
 	 */
 	@Test
-	public void testExplicit() {
-		String apiUrl = "url";
-		String apiKey = "key";
-		String application = "app";
-		String environment = "env";
+	public void fromPropertiesWithOverrides() {
+		String apiUrl = "urlOverride";
+		String apiKey = "keyOverride";
+		String application = "appOverride";
+		String environment = "envOverride";
 				
-		ApiConfiguration apiConfig = ApiConfigurations.from(apiUrl, apiKey, application, environment);
+		ApiConfiguration apiConfig = ApiConfigurations.fromPropertiesWithOverrides(apiUrl, apiKey, application, environment);
 		
 		Assert.assertNotNull(apiConfig);
 		Assert.assertEquals(apiUrl, apiConfig.getApiUrl());
@@ -45,7 +45,7 @@ public class ApiConfigurationsTest {
 	}
 	
 	/**
-	 * testExplicit
+	 * testFromProperties
 	 */
 	@Test
 	public void testFromProperties() {

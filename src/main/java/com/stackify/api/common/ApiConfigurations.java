@@ -23,8 +23,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
 /**
  * ApiConfigurations
  * @author Eric Martin
@@ -44,16 +42,20 @@ public class ApiConfigurations {
 	 * @param environment Configured environment name
 	 * @return ApiConfiguration
 	 */
-	public static ApiConfiguration from(final String apiUrl, final String apiKey, final String application, final String environment) {
-		Preconditions.checkNotNull(apiKey);
-		Preconditions.checkArgument(!apiKey.isEmpty());
+	public static ApiConfiguration fromPropertiesWithOverrides(final String apiUrl, final String apiKey, final String application, final String environment) {
+		ApiConfiguration props = ApiConfigurations.fromProperties();
+		
+		String mergedApiUrl = ((apiUrl != null) && (0 < apiUrl.length())) ? apiUrl : props.getApiUrl();
+		String mergedApiKey = ((apiKey != null) && (0 < apiKey.length())) ? apiKey : props.getApiKey();
+		String mergedApplication = ((application != null) && (0 < application.length())) ? application : props.getApplication();
+		String mergedEnvironment = ((environment != null) && (0 < environment.length())) ? environment : props.getEnvironment();
 		
 		ApiConfiguration.Builder builder = ApiConfiguration.newBuilder();
-		builder.apiUrl(apiUrl);
-		builder.apiKey(apiKey);
-		builder.application(application);
-		builder.environment(environment);
-		builder.envDetail(EnvironmentDetails.getEnvironmentDetail(application, environment));
+		builder.apiUrl(mergedApiUrl);
+		builder.apiKey(mergedApiKey);
+		builder.application(mergedApplication);
+		builder.environment(mergedEnvironment);
+		builder.envDetail(EnvironmentDetails.getEnvironmentDetail(mergedApplication, mergedEnvironment));
 		
 		return builder.build();
 	}
