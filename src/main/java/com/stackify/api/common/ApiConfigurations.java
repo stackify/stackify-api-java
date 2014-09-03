@@ -70,7 +70,7 @@ public class ApiConfigurations {
 		FileReader confFileReader = null;
 		
 		try {
-			URL confFileUrl = ClassLoader.getSystemResource("stackify-api.properties");
+			URL confFileUrl = ApiConfigurations.class.getResource("/stackify-api.properties");
 			File confFile = new File(confFileUrl.toURI());
 						
 			if (confFile.exists()) {
