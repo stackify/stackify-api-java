@@ -37,7 +37,12 @@ import com.stackify.api.common.http.HttpException;
  * @author Eric Martin
  */
 public class LogCollector {
-		
+	
+	/**
+	 * Max batch size of log messages to be sent in a single request
+	 */
+	private static final int MAX_BATCH = 100;
+	
 	/**
 	 * The logger (project) name
 	 */
@@ -56,7 +61,7 @@ public class LogCollector {
 	/**
 	 * The queue of objects to be transmitted
 	 */
-	private final Queue<LogMsg> queue = Queues.synchronizedQueue(EvictingQueue.<LogMsg>create(1000)); 
+	private final Queue<LogMsg> queue = Queues.synchronizedQueue(EvictingQueue.<LogMsg>create(10000)); 
 
 	/**
 	 * Constructor
@@ -102,7 +107,7 @@ public class LogCollector {
 				
 				// get the next batch of messages
 				
-				int batchSize = Math.min(maxToSend - numSent, 20);
+				int batchSize = Math.min(maxToSend - numSent, MAX_BATCH);
 	
 				List<LogMsg> batch = Lists.newArrayListWithCapacity(batchSize);
 				
@@ -110,7 +115,7 @@ public class LogCollector {
 					batch.add(queue.remove());
 				}
 				
-				// build the log message group testAddAndFlushrecord
+				// build the log message group
 				
 				LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
 				
