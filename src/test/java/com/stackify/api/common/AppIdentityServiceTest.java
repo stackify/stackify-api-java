@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import static org.powermock.api.mockito.PowerMockito.*;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -39,29 +40,32 @@ public class AppIdentityServiceTest {
 
 	/**
 	 * testGetAppIdentity
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	@Test
-	public void testGetAppIdentity() throws Exception {		
+	public void testGetAppIdentity() throws Exception {
 
-		EnvironmentDetail envDetail = EnvironmentDetail.newBuilder().deviceName("device").appName("app").build();
+		final EnvironmentDetail envDetail =
+			EnvironmentDetail.newBuilder().deviceName("device").appName("app").build();
 
-		AppIdentity appIdentity = AppIdentity.newBuilder().deviceId(Integer.valueOf(123)).appNameId("456").build();
+		final AppIdentity appIdentity =
+			AppIdentity.newBuilder().deviceId(123).appNameId("456").appName("app").build();
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		
+		final ObjectMapper objectMapper = new ObjectMapper();
+
 		String appIdentityResponse = objectMapper.writer().writeValueAsString(appIdentity);
-		
-		HttpClient httpClient = PowerMockito.mock(HttpClient.class);
-		PowerMockito.whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);
-		PowerMockito.when(httpClient.post(Mockito.anyString(), (byte[]) Mockito.any())).thenReturn(appIdentityResponse);
-		
-		ApiConfiguration apiConfig = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").envDetail(envDetail).build();
-		
+
+		final HttpClient httpClient = mock(HttpClient.class);
+		whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);
+		when(httpClient.post(Mockito.anyString(), (byte[]) Mockito.any())).thenReturn(appIdentityResponse);
+
+		ApiConfiguration apiConfig =
+			ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").application("app").envDetail(envDetail).build();
+
 		AppIdentityService service = new AppIdentityService(apiConfig, objectMapper);
 
 		Optional<AppIdentity> rv = service.getAppIdentity();
-		
+
 		Assert.assertNotNull(rv);
 		Assert.assertTrue(rv.isPresent());
 		Assert.assertEquals(Integer.valueOf(123), rv.get().getDeviceId());
