@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
 
+import com.stackify.api.EnvironmentDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,10 +76,7 @@ public class AppIdentityService {
 		this.objectMapper = objectMapper;
 	}
 
-	private boolean isCached(final String applicationName) {
-		Preconditions.checkNotNull(applicationName);
-		return applicationIdentityCache.containsKey(applicationName);
-	}
+
 
 	/**
 	 * Retrieves the application identity given the environment details
@@ -90,18 +88,17 @@ public class AppIdentityService {
 		if (applicationName == null)
 			return Optional.absent();
 
-		// new state with current timestamp
-		final AppIdentityState state = new AppIdentityState();
+		// If there's no record create it.
+		if (!applicationIdentityCache.containsKey(applicationName)) {
+			applicationIdentityCache.put(applicationName, new AppIdentityState());
+		}
 
-		final long now = System.currentTimeMillis();
+		final AppIdentityState state = applicationIdentityCache.get(applicationName) ;
 
-		if (state.lastModified() + FIVE_MINUTES_MILLIS < now) {
+		if (state.lastModified() + FIVE_MINUTES_MILLIS < System.currentTimeMillis()) {
 			try {
 				final AppIdentity identity = identifyApp(apiConfig);
-				// Obtain AppIdentity for current app
-				applicationIdentityCache.put(
-					applicationName, state.updateAppIdentity(identity)
-				);
+				state.setAppIdentity(identity);
 
 				LOGGER.debug("Application identity: {}", identity);
 
@@ -120,15 +117,26 @@ public class AppIdentityService {
 			return applicationIdentityCache.get(applicationName).getAppIdentity();
 
 		} else {
+			// Update environment detail with new configured application name
+			final EnvironmentDetail updatedEnvDetail =
+				updateEnvironmentDetail(defaultApiConfig.getEnvDetail(), applicationName);
+
 			// use existing apiConfig, with new application name
-			final ApiConfiguration updatedApiConfig = defaultApiConfig.toBuilder().application(applicationName).build();
+			final ApiConfiguration updatedApiConfig = defaultApiConfig.toBuilder()
+				.application(applicationName)
+				.envDetail(updatedEnvDetail)
+				.build();
+
 			return getAppIdentity(updatedApiConfig);
 		}
 	}
 
 
  	public Optional<AppIdentity> getAppIdentity() {
-		return getAppIdentity(defaultApiConfig);
+		if (isCached(defaultApiConfig.getApplication()))
+			return applicationIdentityCache.get(defaultApiConfig.getApplication()).getAppIdentity();
+		else
+			return getAppIdentity(defaultApiConfig);
  	}
 
 	/**
@@ -149,6 +157,27 @@ public class AppIdentityService {
 		ObjectReader jsonReader = objectMapper.reader(new TypeReference<AppIdentity>(){});
 		return jsonReader.readValue(responseString);
 	}
+
+
+	private boolean isCached(final String applicationName) {
+		Preconditions.checkNotNull(applicationName);
+
+		return
+			applicationIdentityCache.containsKey(applicationName) &&
+			applicationIdentityCache.get(applicationName).getAppIdentity().isPresent();
+	}
+
+
+	private EnvironmentDetail updateEnvironmentDetail(final EnvironmentDetail envDetail, final String newConfAppName) {
+		return EnvironmentDetail.newBuilder()
+			.deviceName(envDetail.getDeviceName())
+			.appName(envDetail.getAppName())
+			.appLocation(envDetail.getAppLocation())
+			.configuredAppName(newConfAppName)
+			.configuredEnvironmentName(envDetail.getConfiguredEnvironmentName())
+			.build();
+	}
+
 
 	/**
 	 * This class contains appIdentity and it's modification date
@@ -173,9 +202,8 @@ public class AppIdentityService {
 			this.mayBeAppIdentity = Optional.fromNullable(appIdentity);
 		}
 
-		public final AppIdentityState updateAppIdentity(final AppIdentity appIdentity) {
+		public final void setAppIdentity(final AppIdentity appIdentity) {
 			mayBeAppIdentity = Optional.fromNullable(appIdentity);
-			return this;
 		}
 
 		public final Optional<AppIdentity> getAppIdentity() {
