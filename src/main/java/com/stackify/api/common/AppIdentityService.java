@@ -16,6 +16,8 @@
 package com.stackify.api.common;
 
 import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,27 +46,22 @@ public class AppIdentityService {
 	 * Five minutes (in milliseconds)
 	 */
 	private static long FIVE_MINUTES_MILLIS = 300000;
-	
+
 	/**
-	 * Timestamp of the last query
+	 * Map<ApplicationName, AppIdentityState> The cached app identity
 	 */
-	private long lastQuery = 0;
-	
-	/**
-	 * The cached app identity
-	 */
-	private Optional<AppIdentity> appIdentity = Optional.absent();
-			
+	private Map<String, AppIdentityState> applicationIdentityCache = new Hashtable<String, AppIdentityState>();
+
 	/**
 	 * The API configuration
 	 */
-	private final ApiConfiguration apiConfig;
+	private final ApiConfiguration defaultApiConfig;
 
 	/**
 	 * Jackson object mapper
 	 */
 	private final ObjectMapper objectMapper;
-	
+
 	/**
 	 * Constructor
 	 * @param apiConfig The API configuration
@@ -73,55 +70,128 @@ public class AppIdentityService {
 	public AppIdentityService(final ApiConfiguration apiConfig, final ObjectMapper objectMapper) {
 		Preconditions.checkNotNull(apiConfig);
 		Preconditions.checkNotNull(objectMapper);
-		
-		this.apiConfig = apiConfig;
+
+		this.defaultApiConfig = apiConfig;
 		this.objectMapper = objectMapper;
 	}
-		
+
+	private boolean isCached(final String applicationName) {
+		Preconditions.checkNotNull(applicationName);
+		return applicationIdentityCache.containsKey(applicationName);
+	}
+
 	/**
 	 * Retrieves the application identity given the environment details
 	 * @return The application identity
 	 */
-	public Optional<AppIdentity> getAppIdentity() {
-		if (!appIdentity.isPresent()) {
-			long currentTimeMillis = System.currentTimeMillis();
-			
-			if (lastQuery + FIVE_MINUTES_MILLIS < currentTimeMillis) {
-				try {
-					lastQuery = currentTimeMillis;
-					appIdentity = Optional.fromNullable(identifyApp());
-					LOGGER.debug("Application identity: {}", appIdentity.get());
-				} catch (Throwable t) {
-					LOGGER.info("Unable to determine application identity", t);
-				}
+	private Optional<AppIdentity> getAppIdentity(ApiConfiguration apiConfig) {
+		final String applicationName = apiConfig.getApplication();
+
+		if (applicationName == null)
+			return Optional.absent();
+
+		// new state with current timestamp
+		final AppIdentityState state = new AppIdentityState();
+
+		final long now = System.currentTimeMillis();
+
+		if (state.lastModified() + FIVE_MINUTES_MILLIS < now) {
+			try {
+				final AppIdentity identity = identifyApp(apiConfig);
+				// Obtain AppIdentity for current app
+				applicationIdentityCache.put(
+					applicationName, state.updateAppIdentity(identity)
+				);
+
+				LOGGER.debug("Application identity: {}", identity);
+
+			} catch (Throwable t) {
+				LOGGER.info("Unable to determine application identity", t);
 			}
 		}
-		
-		return appIdentity;
+
+		return applicationIdentityCache.get(apiConfig.getApplication()).getAppIdentity();
 	}
-	
+
+
+
+	public Optional<AppIdentity> getAppIdentity(final String applicationName) {
+		if (isCached(applicationName)) {
+			return applicationIdentityCache.get(applicationName).getAppIdentity();
+
+		} else {
+			// use existing apiConfig, with new application name
+			final ApiConfiguration updatedApiConfig = defaultApiConfig.toBuilder().application(applicationName).build();
+			return getAppIdentity(updatedApiConfig);
+		}
+	}
+
+
+ 	public Optional<AppIdentity> getAppIdentity() {
+		return getAppIdentity(defaultApiConfig);
+ 	}
+
 	/**
 	 * Retrieves the application identity given the environment details
 	 * @return The application identity
 	 * @throws IOException
-	 * @throws HttpException 
+	 * @throws HttpException
 	 */
-	private AppIdentity identifyApp() throws IOException, HttpException {
-		
+	private AppIdentity identifyApp(ApiConfiguration apiConfig) throws IOException, HttpException {
 		// convert to json bytes
-		
 		byte[] jsonBytes = objectMapper.writer().writeValueAsBytes(apiConfig.getEnvDetail());
-		
+
 		// post to stackify
-		
-		HttpClient httpClient = new HttpClient(apiConfig);
-		String responseString = httpClient.post("/Metrics/IdentifyApp", jsonBytes);
-		
+		final HttpClient httpClient = new HttpClient(apiConfig);
+		final String responseString = httpClient.post("/Metrics/IdentifyApp", jsonBytes);
+
 		// deserialize the response and return the app identity
-		
 		ObjectReader jsonReader = objectMapper.reader(new TypeReference<AppIdentity>(){});
-		AppIdentity appIdentity = jsonReader.readValue(responseString);
-		
-		return appIdentity;
+		return jsonReader.readValue(responseString);
+	}
+
+	/**
+	 * This class contains appIdentity and it's modification date
+	 */
+	private class AppIdentityState {
+
+		private Optional<AppIdentity> mayBeAppIdentity = Optional.absent();
+		private long lastQueryTimeStamp;
+
+		public AppIdentityState() {
+			this.lastQueryTimeStamp = 0;
+			this.mayBeAppIdentity = Optional.absent();
+		}
+
+		public AppIdentityState(final AppIdentity appIdentity) {
+			this.touch();
+			this.mayBeAppIdentity = Optional.fromNullable(appIdentity);
+		}
+
+		public AppIdentityState(final AppIdentity appIdentity, long timestamp) {
+			this.lastQueryTimeStamp = timestamp;
+			this.mayBeAppIdentity = Optional.fromNullable(appIdentity);
+		}
+
+		public final AppIdentityState updateAppIdentity(final AppIdentity appIdentity) {
+			mayBeAppIdentity = Optional.fromNullable(appIdentity);
+			return this;
+		}
+
+		public final Optional<AppIdentity> getAppIdentity() {
+			this.touch();
+			return mayBeAppIdentity;
+		}
+
+		public final long lastModified() {
+			return lastQueryTimeStamp;
+		}
+
+		/**
+		 * Changes last modified date
+		 */
+		public final void touch() {
+			this.lastQueryTimeStamp = System.currentTimeMillis();
+		}
 	}
 }
