@@ -93,12 +93,14 @@ public class AppIdentityService {
 			applicationIdentityCache.put(applicationName, new AppIdentityState());
 		}
 
-		final AppIdentityState state = applicationIdentityCache.get(applicationName) ;
+		final AppIdentityState state = applicationIdentityCache.get(applicationName);
+		final long now = System.currentTimeMillis();
 
-		if (state.lastModified() + FIVE_MINUTES_MILLIS < System.currentTimeMillis()) {
+		if ((state.lastModified() + FIVE_MINUTES_MILLIS) < now) {
+			state.touch();
 			try {
 				final AppIdentity identity = identifyApp(apiConfig);
-				state.setAppIdentity(identity);
+				applicationIdentityCache.put(applicationName, state.updateAppIdentity(identity));
 
 				LOGGER.debug("Application identity: {}", identity);
 
@@ -111,7 +113,11 @@ public class AppIdentityService {
 	}
 
 
-
+	/**
+	 * Retrieves the application identity given the environment details
+	 * @param applicationName - name of the application
+	 * @return The application identity
+	 */
 	public Optional<AppIdentity> getAppIdentity(final String applicationName) {
 		if (isCached(applicationName)) {
 			return applicationIdentityCache.get(applicationName).getAppIdentity();
@@ -193,7 +199,7 @@ public class AppIdentityService {
 		}
 
 		public AppIdentityState(final AppIdentity appIdentity) {
-			this.touch();
+			this.lastQueryTimeStamp = 0;
 			this.mayBeAppIdentity = Optional.fromNullable(appIdentity);
 		}
 
@@ -202,12 +208,12 @@ public class AppIdentityService {
 			this.mayBeAppIdentity = Optional.fromNullable(appIdentity);
 		}
 
-		public final void setAppIdentity(final AppIdentity appIdentity) {
+		public final AppIdentityState updateAppIdentity(final AppIdentity appIdentity) {
 			mayBeAppIdentity = Optional.fromNullable(appIdentity);
+			return this;
 		}
 
 		public final Optional<AppIdentity> getAppIdentity() {
-			this.touch();
 			return mayBeAppIdentity;
 		}
 
