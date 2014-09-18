@@ -23,32 +23,32 @@ import com.google.common.base.Objects;
  * @author Eric Martin
  */
 public class ApiConfiguration {
-	
+
 	/**
 	 * Default API URL
 	 */
 	private static final String DEFAULT_API_URL = "https://api.stackify.com";
-	
+
 	/**
 	 * API URL
 	 */
 	private final String apiUrl;
-	
+
 	/**
 	 * API Key
 	 */
 	private final String apiKey;
-	
+
 	/**
 	 * Application name
 	 */
 	private final String application;
-	
+
 	/**
 	 * Environment
 	 */
 	private final String environment;
-	
+
 	/**
 	 * Environment details
 	 */
@@ -93,11 +93,11 @@ public class ApiConfiguration {
 	 * @param builder The Builder object that contains all of the values for initialization
 	 */
 	private ApiConfiguration(final Builder builder) {
-	    this.apiUrl = builder.apiUrl;
-	    this.apiKey = builder.apiKey;
-	    this.application = builder.application;
-	    this.environment = builder.environment;
-	    this.envDetail = builder.envDetail;
+		this.apiUrl = builder.apiUrl;
+		this.apiKey = builder.apiKey;
+		this.application = builder.application;
+		this.environment = builder.environment;
+		this.envDetail = builder.envDetail;
 	}
 
 	/**
@@ -105,6 +105,19 @@ public class ApiConfiguration {
 	 */
 	public static Builder newBuilder() {
 	    return new Builder();
+	}
+
+
+	/**
+	 * @return a Builder object based on current instance
+	 */
+	public Builder toBuilder() {
+		return newBuilder()
+				.apiUrl(apiUrl)
+				.apiKey(apiKey)
+				.application(application)
+				.environment(environment)
+				.envDetail(envDetail);
 	}
 
 	/**
@@ -116,82 +129,82 @@ public class ApiConfiguration {
 		 * The builder's apiUrl
 		 */
 		private String apiUrl;
-		
+
 		/**
 		 * The builder's apiKey
 		 */
 		private String apiKey;
-		
+
 		/**
 		 * The builder's application
 		 */
 		private String application;
-		
+
 		/**
 		 * The builder's environment
 		 */
 		private String environment;
-		
+
 		/**
 		 * The builder's envDetail
 		 */
 		private EnvironmentDetail envDetail;
-		
+
 		/**
 		 * Sets the builder's apiUrl
 		 * @param apiUrl The apiUrl to be set
 		 * @return Reference to the current object
 		 */
 		public Builder apiUrl(final String apiUrl) {
-		    this.apiUrl = apiUrl;
-		    return this;
+			this.apiUrl = apiUrl;
+			return this;
 		}
-		
+
 		/**
 		 * Sets the builder's apiKey
 		 * @param apiKey The apiKey to be set
 		 * @return Reference to the current object
 		 */
 		public Builder apiKey(final String apiKey) {
-		    this.apiKey = apiKey;
-		    return this;
+			this.apiKey = apiKey;
+			return this;
 		}
-		
+
 		/**
 		 * Sets the builder's application
 		 * @param application The application to be set
 		 * @return Reference to the current object
 		 */
 		public Builder application(final String application) {
-		    this.application = application;
-		    return this;
+			this.application = application;
+			return this;
 		}
-		
+
 		/**
 		 * Sets the builder's environment
 		 * @param environment The environment to be set
 		 * @return Reference to the current object
 		 */
 		public Builder environment(final String environment) {
-		    this.environment = environment;
-		    return this;
+			this.environment = environment;
+			return this;
 		}
-		
+
 		/**
 		 * Sets the builder's envDetail
 		 * @param envDetail The envDetail to be set
 		 * @return Reference to the current object
 		 */
 		public Builder envDetail(final EnvironmentDetail envDetail) {
-		    this.envDetail = envDetail;
-		    return this;
+			this.envDetail = envDetail;
+			return this;
 		}
-		
+
 		/**
 		 * @return A new object constructed from this builder
 		 */
 		public ApiConfiguration build() {
-		    return new ApiConfiguration(this);
+			return new ApiConfiguration(this);
 		}
 	}
 
@@ -201,13 +214,13 @@ public class ApiConfiguration {
 	 */
 	@Override
 	public String toString() {
-	    return Objects.toStringHelper(this)
-	                  .omitNullValues()
-	                  .add("apiUrl", apiUrl)
-	                  .add("apiKey", apiKey)
-	                  .add("application", application)
-	                  .add("environment", environment)
-	                  .add("envDetail", envDetail)
-	                  .toString();
+		return Objects.toStringHelper(this)
+						.omitNullValues()
+						.add("apiUrl", apiUrl)
+						.add("apiKey", apiKey)
+						.add("application", application)
+						.add("environment", environment)
+						.add("envDetail", envDetail)
+						.toString();
 	}
 }
