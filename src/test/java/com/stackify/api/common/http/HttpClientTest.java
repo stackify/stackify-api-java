@@ -92,4 +92,33 @@ public class HttpClientTest {
 		
 		httpClient.post("path", "hello".getBytes());
 	}
+	
+	/**
+	 * testPostWithGzip
+	 * @throws Exception 
+	 */
+	@Test
+	public void testPostWithGzip() throws Exception {
+		
+		URL url = PowerMockito.mock(URL.class);
+		PowerMockito.whenNew(URL.class).withArguments(Mockito.anyString()).thenReturn(url);
+		
+		HttpURLConnection connection = PowerMockito.mock(HttpURLConnection.class);
+		
+		PowerMockito.when(url.openConnection()).thenReturn(connection);
+		
+		ByteArrayOutputStream postBody = new ByteArrayOutputStream();
+		PowerMockito.when(connection.getOutputStream()).thenReturn(postBody);
+		
+		ByteArrayInputStream contents = new ByteArrayInputStream("world".getBytes());
+		PowerMockito.when(connection.getInputStream()).thenReturn(contents);
+		PowerMockito.when(connection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+
+		HttpClient httpClient = new HttpClient(Mockito.mock(ApiConfiguration.class));
+		
+		String world = httpClient.post("path", "hello".getBytes(), true);
+		
+		Assert.assertNotNull(world);
+		Assert.assertEquals("world", world);
+	}
 }

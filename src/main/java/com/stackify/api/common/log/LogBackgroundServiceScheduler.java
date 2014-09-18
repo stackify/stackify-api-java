@@ -27,12 +27,7 @@ import com.stackify.api.common.http.HttpException;
  * @author Eric Martin
  */
 public class LogBackgroundServiceScheduler extends CustomScheduler {
-	
-	/**
-	 * One tenth of a second (milliseconds)
-	 */
-	private static final long ONE_TENTH_OF_A_SECOND = 100;
-	
+		
 	/**
 	 * One second (milliseconds)
 	 */
@@ -78,9 +73,9 @@ public class LogBackgroundServiceScheduler extends CustomScheduler {
 		if (100 <= numSent) {
 			
 			// messages are coming in quickly so decrease our delay
-			// minimum delay is 1/10 of a second
+			// minimum delay is 1 second
 			
-			scheduleDelay = Math.max(Math.round(scheduleDelay / 2.0), ONE_TENTH_OF_A_SECOND);
+			scheduleDelay = Math.max(Math.round(scheduleDelay / 2.0), ONE_SECOND);
 			
 		} else if (numSent < 10) {
 			

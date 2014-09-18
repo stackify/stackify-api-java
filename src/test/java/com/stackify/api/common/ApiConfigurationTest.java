@@ -54,7 +54,7 @@ public class ApiConfigurationTest {
 		Assert.assertEquals(environment, apiConfig.getEnvironment());
 		Assert.assertEquals(envDetail, apiConfig.getEnvDetail());
 		
-		Assert.assertNotNull(envDetail.toString());
+		Assert.assertNotNull(apiConfig.toString());
 	}
 	
 	/**

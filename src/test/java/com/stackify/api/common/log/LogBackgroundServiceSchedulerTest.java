@@ -201,18 +201,9 @@ public class LogBackgroundServiceSchedulerTest {
 		Assert.assertEquals(1250, scheduler.getScheduleDelay());
 
 		scheduler.update(1000);
-		Assert.assertEquals(625, scheduler.getScheduleDelay());
+		Assert.assertEquals(1000, scheduler.getScheduleDelay());
 
 		scheduler.update(1000);
-		Assert.assertEquals(313, scheduler.getScheduleDelay());
-
-		scheduler.update(1000);
-		Assert.assertEquals(157, scheduler.getScheduleDelay());
-
-		scheduler.update(1000);
-		Assert.assertEquals(100, scheduler.getScheduleDelay());
-
-		scheduler.update(1000);
-		Assert.assertEquals(100, scheduler.getScheduleDelay());		
+		Assert.assertEquals(1000, scheduler.getScheduleDelay());	
 	}
 }
