@@ -37,31 +37,31 @@ import com.stackify.api.common.http.HttpException;
  * @author Eric Martin
  */
 public class LogCollector {
-	
+
 	/**
 	 * Max batch size of log messages to be sent in a single request
 	 */
 	private static final int MAX_BATCH = 100;
-	
+
 	/**
 	 * The logger (project) name
 	 */
 	private final String logger;
-	
+
 	/**
 	 * Environment details
 	 */
 	private final EnvironmentDetail envDetail;
-	
+
 	/**
 	 * Application identity service
 	 */
 	private final AppIdentityService appIdentityService;
-	
+
 	/**
 	 * The queue of objects to be transmitted
 	 */
-	private final Queue<LogMsg> queue = Queues.synchronizedQueue(EvictingQueue.<LogMsg>create(10000)); 
+	private final Queue<LogMsg> queue = Queues.synchronizedQueue(EvictingQueue.<LogMsg>create(10000));
 
 	/**
 	 * Constructor
@@ -77,88 +77,98 @@ public class LogCollector {
 		this.envDetail = envDetail;
 		this.appIdentityService = appIdentityService;
 	}
-	
+
 	/**
 	 * Queues logMsg to be sent
 	 * @param logMsg The log message
 	 */
 	public void addLogMsg(final LogMsg logMsg) {
-		Preconditions.checkNotNull(logMsg);		
+		Preconditions.checkNotNull(logMsg);
 		queue.offer(logMsg);
 	}
-	
+
 	/**
 	 * Flushes the queue by sending all messages to Stackify
 	 * @param sender The LogMsgGroup sender
 	 * @return The number of messages sent to Stackify
 	 * @throws IOException
-	 * @throws HttpException 
+	 * @throws HttpException
 	 */
 	public int flush(final LogSender sender) throws IOException, HttpException {
 
 		int numSent = 0;
 		int maxToSend = queue.size();
-		
+
 		if (0 < maxToSend) {
-		
 			Optional<AppIdentity> appIdentity = appIdentityService.getAppIdentity();
-			
+
 			while (numSent < maxToSend) {
-				
+
 				// get the next batch of messages
-				
 				int batchSize = Math.min(maxToSend - numSent, MAX_BATCH);
-	
+
 				List<LogMsg> batch = Lists.newArrayListWithCapacity(batchSize);
-				
+
 				for (int i = 0; i < batchSize; ++i) {
 					batch.add(queue.remove());
 				}
-				
+
 				// build the log message group
-				
-				LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
-				
-				groupBuilder.platform("java");
-				groupBuilder.logger(logger);
-				groupBuilder.serverName(envDetail.getDeviceName());
-				groupBuilder.env(envDetail.getConfiguredEnvironmentName());
-				groupBuilder.appName(envDetail.getConfiguredAppName());
-				groupBuilder.appLoc(envDetail.getAppLocation());
-				
-				if (appIdentity.isPresent()) {
-					groupBuilder.cdId(appIdentity.get().getDeviceId());
-					groupBuilder.cdAppId(appIdentity.get().getDeviceAppId());
-					groupBuilder.appNameId(appIdentity.get().getAppNameId());
-					groupBuilder.appEnvId(appIdentity.get().getAppEnvId());
-					groupBuilder.envId(appIdentity.get().getEnvId());
-					groupBuilder.env(appIdentity.get().getEnv());
-					
-					if ((appIdentity.get().getAppName() != null) && (0 < appIdentity.get().getAppName().length())) {
-						groupBuilder.appName(appIdentity.get().getAppName());
-					}
-				}
-	
-				groupBuilder.msgs(batch);
-				
-				LogMsgGroup group = groupBuilder.build();
-				
+				LogMsgGroup group = createLogMessageGroup(batch, logger, envDetail, appIdentity);
+
 				// send the batch to Stackify
-				
-				int httpStatus = sender.send(group);	
-				
+				int httpStatus = sender.send(group);
+
 				// if the batch failed to transmit, return the appropriate transmission status
-				
 				if (httpStatus != HttpURLConnection.HTTP_OK) {
 					throw new HttpException(httpStatus);
 				}
-				
+
 				// next iteration
-				
 				numSent += batchSize;
 			}
 		}
-		
+
 		return numSent;
+	}
+
+	/**
+	 *
+	 * @param batch - a bunch of messages that should be sent over the wire
+	 * @param logger - logger (project) name
+	 * @param envDetail - environment details
+	 * @param appIdentity - application identity
+	 * @return LogMessage group object with
+	 */
+	private LogMsgGroup createLogMessageGroup (
+		final List<LogMsg> batch, final String logger, final EnvironmentDetail envDetail, final Optional<AppIdentity> appIdentity
+	) {
+		final LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
+
+		groupBuilder
+			.platform("java")
+			.logger(logger)
+			.serverName(envDetail.getDeviceName())
+			.env(envDetail.getConfiguredEnvironmentName())
+			.appName(envDetail.getConfiguredAppName())
+			.appLoc(envDetail.getAppLocation());
+
+		if (appIdentity.isPresent()) {
+			groupBuilder
+				.cdId(appIdentity.get().getDeviceId())
+				.cdAppId(appIdentity.get().getDeviceAppId())
+				.appNameId(appIdentity.get().getAppNameId())
+				.appEnvId(appIdentity.get().getAppEnvId())
+				.envId(appIdentity.get().getEnvId())
+				.env(appIdentity.get().getEnv());
+
+			if ((appIdentity.get().getAppName() != null) && (0 < appIdentity.get().getAppName().length())) {
+				groupBuilder.appName(appIdentity.get().getAppName());
+			}
+		}
+
+		groupBuilder.msgs(batch);
+
+		return groupBuilder.build();
 	}
 }
