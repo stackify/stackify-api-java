@@ -76,8 +76,6 @@ public class AppIdentityService {
 		this.objectMapper = objectMapper;
 	}
 
-
-
 	/**
 	 * Retrieves the application identity given the environment details
 	 * @return The application identity
@@ -112,7 +110,6 @@ public class AppIdentityService {
 		return applicationIdentityCache.get(apiConfig.getApplication()).getAppIdentity();
 	}
 
-
 	/**
 	 * Retrieves the application identity given the environment details
 	 * @param applicationName - name of the application
@@ -137,7 +134,10 @@ public class AppIdentityService {
 		}
 	}
 
-
+	/**
+	 * getAppIdentity
+	 * @return The application identity
+	 */
  	public Optional<AppIdentity> getAppIdentity() {
 		if (isCached(defaultApiConfig.getApplication()))
 			return applicationIdentityCache.get(defaultApiConfig.getApplication()).getAppIdentity();
@@ -196,16 +196,6 @@ public class AppIdentityService {
 		public AppIdentityState() {
 			this.lastQueryTimeStamp = 0;
 			this.mayBeAppIdentity = Optional.absent();
-		}
-
-		public AppIdentityState(final AppIdentity appIdentity) {
-			this.lastQueryTimeStamp = 0;
-			this.mayBeAppIdentity = Optional.fromNullable(appIdentity);
-		}
-
-		public AppIdentityState(final AppIdentity appIdentity, long timestamp) {
-			this.lastQueryTimeStamp = timestamp;
-			this.mayBeAppIdentity = Optional.fromNullable(appIdentity);
 		}
 
 		public final AppIdentityState updateAppIdentity(final AppIdentity appIdentity) {

@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
-import static org.powermock.api.mockito.PowerMockito.*;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -55,9 +54,9 @@ public class AppIdentityServiceTest {
 
 		String appIdentityResponse = objectMapper.writer().writeValueAsString(appIdentity);
 
-		final HttpClient httpClient = mock(HttpClient.class);
-		whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);
-		when(httpClient.post(Mockito.anyString(), (byte[]) Mockito.any())).thenReturn(appIdentityResponse);
+		final HttpClient httpClient = PowerMockito.mock(HttpClient.class);
+		PowerMockito.whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);
+		PowerMockito.when(httpClient.post(Mockito.anyString(), (byte[]) Mockito.any())).thenReturn(appIdentityResponse);
 
 		ApiConfiguration apiConfig =
 			ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").application("app").envDetail(envDetail).build();
@@ -70,5 +69,20 @@ public class AppIdentityServiceTest {
 		Assert.assertTrue(rv.isPresent());
 		Assert.assertEquals(Integer.valueOf(123), rv.get().getDeviceId());
 		Assert.assertEquals("456", rv.get().getAppNameId());
+	}
+	
+	/**
+	 * testGetAppIdentityWithoutName
+	 */
+	@Test
+	public void testGetAppIdentityWithoutName() {
+		ObjectMapper objectMapper = Mockito.mock(ObjectMapper.class);
+		ApiConfiguration apiConfig = ApiConfigurations.fromProperties();
+		AppIdentityService service = new AppIdentityService(apiConfig, objectMapper);
+
+		Optional<AppIdentity> absent = service.getAppIdentity("");
+		
+		Assert.assertNotNull(absent);
+		Assert.assertFalse(absent.isPresent());
 	}
 }

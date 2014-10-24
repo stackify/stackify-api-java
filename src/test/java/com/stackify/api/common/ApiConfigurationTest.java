@@ -64,4 +64,38 @@ public class ApiConfigurationTest {
 	public void testBuilderWithDefaultUrl() {
 		Assert.assertEquals("https://api.stackify.com", ApiConfiguration.newBuilder().build().getApiUrl());
 	}
+	
+	/**
+	 * testToBuilder
+	 */
+	@Test
+	public void testToBuilder() {
+		String apiUrl = "url";
+		String apiKey = "key";
+		String application = "app";
+		String environment = "env";
+		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+		
+		ApiConfiguration.Builder builder = ApiConfiguration.newBuilder();
+		builder.apiUrl(apiUrl);
+		builder.apiKey(apiKey);
+		builder.application(application);
+		builder.environment(environment);
+		builder.envDetail(envDetail);
+		
+		ApiConfiguration apiConfig = builder.build();
+		
+		ApiConfiguration.Builder toBuilder = apiConfig.toBuilder();
+		
+		Assert.assertNotNull(toBuilder);
+		
+		ApiConfiguration toApiConfig = toBuilder.build();
+		
+		Assert.assertNotNull(toApiConfig);
+		Assert.assertEquals(apiUrl, toApiConfig.getApiUrl());
+		Assert.assertEquals(apiKey, toApiConfig.getApiKey());
+		Assert.assertEquals(application, toApiConfig.getApplication());
+		Assert.assertEquals(environment, toApiConfig.getEnvironment());
+		Assert.assertEquals(envDetail, toApiConfig.getEnvDetail());
+	}
 }
