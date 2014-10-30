@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.stackify.api.common.ApiClients;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.ApiConfigurations;
 import com.stackify.api.common.log.LogAppender;
@@ -68,7 +69,9 @@ public class LogManager
 		try {
 			CONFIG = ApiConfigurations.fromProperties();
 			
-			LOG_APPENDER = new LogAppender<LogEvent>("stackify-log-direct", new LogEventAdapter(CONFIG.getEnvDetail()));			
+			String clientName = ApiClients.getApiClient("/stackify-api-common.properties", "stackify-api-common");
+
+			LOG_APPENDER = new LogAppender<LogEvent>(clientName, new LogEventAdapter(CONFIG.getEnvDetail()));			
 			LOG_APPENDER.activate(CONFIG);
 		} catch (Throwable t) {
 			LOGGER.error("Exception starting Stackify Log API service", t);
