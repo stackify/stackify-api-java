@@ -15,9 +15,7 @@
  */
 package com.stackify.api.common;
 
-import java.io.File;
-import java.io.FileReader;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -40,19 +38,16 @@ public class ApiClients {
 	 * @param defaultClientName Default client name
 	 * @return The client name
 	 */
-	public static String getApiClient(final String fileName, final String defaultClientName) {
+	public static String getApiClient(final Class<?> apiClass, final String fileName, final String defaultClientName) {
 		
-		FileReader fileReader = null;
+		InputStream propertiesStream = null;
 		
 		try {
-			URL fileUrl = ApiConfigurations.class.getResource(fileName);
-			File file = new File(fileUrl.toURI());
-						
-			if (file.exists()) {
-				fileReader = new FileReader(file);
+			propertiesStream = apiClass.getResourceAsStream(fileName);
 			
+			if (propertiesStream != null) {			
 				Properties props = new Properties();
-				props.load(fileReader);
+				props.load(propertiesStream);
 		
 				String name = (String) props.get("api-client.name");
 				String version = (String) props.get("api-client.version");
@@ -62,9 +57,9 @@ public class ApiClients {
 		} catch (Throwable t) {
 			LOGGER.error("Exception reading {} configuration file", fileName, t);
 		} finally {
-			if (fileReader != null) {
+			if (propertiesStream != null) {
 				try {
-					fileReader.close();
+					propertiesStream.close();
 				} catch (Throwable t) {
 					LOGGER.info("Exception closing {} configuration file", fileName, t);
 				}

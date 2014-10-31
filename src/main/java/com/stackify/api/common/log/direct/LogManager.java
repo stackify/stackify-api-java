@@ -69,7 +69,7 @@ public class LogManager
 		try {
 			CONFIG = ApiConfigurations.fromProperties();
 			
-			String clientName = ApiClients.getApiClient("/stackify-api-common.properties", "stackify-api-common");
+			String clientName = ApiClients.getApiClient(LogManager.class, "/stackify-api-common.properties", "stackify-api-common");
 
 			LOG_APPENDER = new LogAppender<LogEvent>(clientName, new LogEventAdapter(CONFIG.getEnvDetail()));			
 			LOG_APPENDER.activate(CONFIG);

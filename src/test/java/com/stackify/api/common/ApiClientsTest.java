@@ -40,7 +40,7 @@ public class ApiClientsTest {
 	 */
 	@Test
 	public void testGetApiClient() {
-		String apiClient = ApiClients.getApiClient("/stackify-api-common.properties", "stackify-api-common");
+		String apiClient = ApiClients.getApiClient(ApiClients.class, "/stackify-api-common.properties", "stackify-api-common");
 		Assert.assertEquals("name-version", apiClient);
 	}
 	
@@ -49,7 +49,7 @@ public class ApiClientsTest {
 	 */
 	@Test
 	public void testGetApiClientWithoutProperties() {
-		String apiClient = ApiClients.getApiClient("/does-not-exist.properties", "stackify-api-common");
+		String apiClient = ApiClients.getApiClient(ApiClients.class, "/does-not-exist.properties", "stackify-api-common");
 		Assert.assertEquals("stackify-api-common", apiClient);
 	}
 	
@@ -63,7 +63,7 @@ public class ApiClientsTest {
 		PowerMockito.doThrow(new IOException()).when(properties).load(Mockito.any(FileReader.class));
 		PowerMockito.whenNew(Properties.class).withNoArguments().thenReturn(properties);
 		
-		String apiClient = ApiClients.getApiClient("/does-not-exist.properties", "stackify-api-common");
+		String apiClient = ApiClients.getApiClient(ApiClients.class, "/does-not-exist.properties", "stackify-api-common");
 		Assert.assertEquals("stackify-api-common", apiClient);
 	}
 }
