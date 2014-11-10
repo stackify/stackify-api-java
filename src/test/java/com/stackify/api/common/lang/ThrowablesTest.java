@@ -240,4 +240,35 @@ public class ThrowablesTest {
 
 		Assert.assertNull(errorDetail.getInnerError().getInnerError().getInnerError());
 	}
+	
+	/**
+	 * testToErrorItemWithStringException
+	 */
+	@Test
+	public void testToErrorItemWithStringException() {
+		String logMessage = "message";
+		String className = "com.stackify.api.common.lang.ThrowablesTest";
+		String methodName = "testToErrorItemWithStringException";
+		int lineNumber = 254;
+		
+		ErrorItem errorItem = Throwables.toErrorItem(logMessage, className, methodName, lineNumber);
+
+		Assert.assertNotNull(errorItem);
+		
+		Assert.assertEquals(logMessage, errorItem.getMessage());
+		Assert.assertEquals("StringException", errorItem.getErrorType());
+		Assert.assertEquals(className + "." + methodName, errorItem.getSourceMethod());
+		
+		List<TraceFrame> stackTrace = errorItem.getStackTrace();
+		
+		Assert.assertNotNull(stackTrace);
+		Assert.assertTrue(0 < stackTrace.size());
+		
+		TraceFrame topFrame = stackTrace.get(0);
+		Assert.assertNotNull(topFrame);
+		
+		Assert.assertEquals("ThrowablesTest.java", topFrame.getCodeFileName());
+		Assert.assertEquals(className + "." + methodName, topFrame.getMethod());
+		Assert.assertEquals(Integer.valueOf(lineNumber), topFrame.getLineNum());
+	}
 }

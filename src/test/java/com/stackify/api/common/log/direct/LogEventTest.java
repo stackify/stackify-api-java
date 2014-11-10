@@ -53,4 +53,24 @@ public class LogEventTest {
 		
 		Assert.assertNotNull(event.toString());
 	}
+	
+	/**
+	 * testBuidlerWithLocation
+	 */
+	@Test
+	public void testBuidlerWithLocation() {
+		String className = "className";
+		String methodName = "methodName";
+		int lineNumber = 14;
+		
+		LogEvent.Builder builder = LogEvent.newBuilder();
+		builder.className(className);
+		builder.methodName(methodName);
+		builder.lineNumber(lineNumber);
+		LogEvent event = builder.build();
+		
+		Assert.assertEquals(className, event.getClassName());
+		Assert.assertEquals(methodName, event.getMethodName());
+		Assert.assertEquals(lineNumber, event.getLineNumber());
+	}
 }

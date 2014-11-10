@@ -156,6 +156,50 @@ public class Throwables {
 	}
 	
 	/**
+	 * Create an error item from a simple log message (without an explicit exception)
+	 * @param logMessage The log message
+	 * @param className The class that logged the message
+	 * @param methodName The method that logged the message
+	 * @param lineNumber The line number that logged the message
+	 * @return The error item
+	 */
+	public static ErrorItem toErrorItem(final String logMessage, final String className, final String methodName, final int lineNumber) {
+		
+		ErrorItem.Builder builder = ErrorItem.newBuilder();
+		builder.message(logMessage);
+		builder.errorType("StringException");
+		builder.sourceMethod(className + "." + methodName);
+		
+		List<TraceFrame> stackFrames = new ArrayList<TraceFrame>();
+
+		StackTraceElement[] stackTrace = (new Throwable()).getStackTrace();
+
+		int start = 0;
+		
+		if ((className != null) && (methodName != null)) {
+			for (int i = 0; i < stackTrace.length; ++i) {
+				StackTraceElement ste = (stackTrace[i]);
+				
+				if (className.equals(ste.getClassName()) && 
+				    methodName.equals(ste.getMethodName()) && 
+				    lineNumber == ste.getLineNumber()) {
+					start = i;
+					break;
+				}
+			}
+		}
+		
+		for (int i = start; i < stackTrace.length; ++i) {
+			TraceFrame stackFrame = StackTraceElements.toTraceFrame(stackTrace[i]);
+			stackFrames.add(stackFrame);
+		}
+
+		builder.stackTrace(stackFrames);
+		
+		return builder.build();
+	}
+	
+	/**
 	 * Hidden to prevent construction
 	 */
 	private Throwables() {

@@ -22,6 +22,11 @@ package com.stackify.api.common.http;
 public class HttpException extends Exception {
 
 	/**
+	 * Serial version UID
+	 */
+	private static final long serialVersionUID = -6349485370575426368L;
+	
+	/**
 	 * HTTP status code
 	 */
 	private final int statusCode;

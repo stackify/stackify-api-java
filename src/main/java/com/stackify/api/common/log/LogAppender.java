@@ -128,40 +128,6 @@ public class LogAppender<T> implements Closeable {
 	 * Adds the log message to the collector
 	 * @param logMsg 
 	 */
-	public void appendError(final T event) {
-
-		// make sure we can append the error
-		
-		if (backgroundService == null) {
-			return;
-		}
-		
-		if (!backgroundService.isRunning()) {
-			return;
-		}
-		
-		// Make sure we have an exception
-		
-		Optional<Throwable> exception = eventAdapter.getThrowable(event);
-		
-		if (!exception.isPresent()) {
-			return;
-		}
-		
-		// build the log message and queue it to be sent to Stackify
-		
-		StackifyError error = eventAdapter.getStackifyError(event, exception.get());
-					
-		if (errorGovernor.errorShouldBeSent(error)) {
-			LogMsg logMsg = eventAdapter.getLogMsg(event, Optional.of(error));
-			collector.addLogMsg(logMsg);
-		}				
-	}
-	
-	/**
-	 * Adds the log message to the collector
-	 * @param logMsg 
-	 */
 	public void append(final T event) {
 
 		// make sure we can append the log message
@@ -180,14 +146,14 @@ public class LogAppender<T> implements Closeable {
 		
 		Optional<StackifyError> error = Optional.absent();
 		
-		if (exception.isPresent()) {
+		if ((exception.isPresent()) || (eventAdapter.isErrorLevel(event))) {
 			StackifyError e = eventAdapter.getStackifyError(event, exception.orNull());
 			
 			if (errorGovernor.errorShouldBeSent(e)) {
 				error = Optional.of(e);
 			}
-		}			
-			
+		}
+		
 		LogMsg logMsg = eventAdapter.getLogMsg(event, error);
 		
 		collector.addLogMsg(logMsg);

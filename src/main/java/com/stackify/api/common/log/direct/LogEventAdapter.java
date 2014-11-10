@@ -62,7 +62,13 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		StackifyError.Builder builder = StackifyError.newBuilder();
 		builder.environmentDetail(envDetail);		
 		builder.occurredEpochMillis(new Date(event.getTimestamp()));
-		builder.error(Throwables.toErrorItem(event.getMessage(), exception));		
+		
+		if (exception != null) {
+			builder.error(Throwables.toErrorItem(event.getMessage(), exception));
+		} else {
+			builder.error(Throwables.toErrorItem(event.getMessage(), event.getClassName(), event.getMethodName(), event.getLineNumber()));
+		}
+		
 		builder.serverVariables(Maps.fromProperties(System.getProperties()));
 		
 		return builder.build();
@@ -83,5 +89,17 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		}
 						
 		return builder.build();
+	}
+
+	/**
+	 * @see com.stackify.api.common.log.EventAdapter#isErrorLevel(java.lang.Object)
+	 */
+	@Override
+	public boolean isErrorLevel(final LogEvent event) {
+		if (event.getLevel() != null) {
+			return "ERROR".equals(event.getLevel().toUpperCase());
+		}
+		
+		return false;
 	}
 }

@@ -40,7 +40,22 @@ public class Logger {
 			LogAppender<LogEvent> appender = LogManager.getAppender();
 
 			if (appender != null) {
-				appender.append(LogEvent.newBuilder().level(level).message(message).build());
+				LogEvent.Builder builder = LogEvent.newBuilder();
+				builder.level(level);
+				builder.message(message);
+				
+				if ((level != null) && ("ERROR".equals(level.toUpperCase()))) {
+					StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+
+					if ((stackTrace != null) && (1 < stackTrace.length)) {
+						StackTraceElement caller = stackTrace[1];
+						builder.className(caller.getClassName());
+						builder.methodName(caller.getMethodName());
+						builder.lineNumber(caller.getLineNumber());						
+					}
+				}
+				
+				appender.append(builder.build());
 			}
 		} catch (Throwable t) {
 			LOGGER.info("Unable to queue message to Stackify Log API service: {} {}", level, message, t);

@@ -88,46 +88,6 @@ public class LogAppenderTest {
 	}
 
 	/**
-	 * testAppendError
-	 * @throws Exception 
-	 */
-	@Test
-	public void testAppendError() throws Exception {
-		String event = "log event";
-		Throwable t = new NullPointerException();
-		
-		EventAdapter<String> adapter = Mockito.mock(EventAdapter.class);
-		Mockito.when(adapter.getThrowable(event)).thenReturn(Optional.of(t));
-		Mockito.when(adapter.getStackifyError(event, t)).thenReturn(Mockito.mock(StackifyError.class));
-		
-		ErrorGovernor governor = Mockito.mock(ErrorGovernor.class);
-		Mockito.when(governor.errorShouldBeSent(Mockito.any(StackifyError.class))).thenReturn(true);
-		PowerMockito.whenNew(ErrorGovernor.class).withAnyArguments().thenReturn(governor);
-		
-		LogAppender<String> appender = new LogAppender<String>("logger", adapter);
-		
-		LogCollector collector = Mockito.mock(LogCollector.class);
-		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
-
-		LogBackgroundService background = PowerMockito.mock(LogBackgroundService.class);
-		Mockito.when(background.startAsync()).thenReturn(Mockito.mock(Service.class));
-		Mockito.when(background.stopAsync()).thenReturn(Mockito.mock(Service.class));
-		PowerMockito.whenNew(LogBackgroundService.class).withAnyArguments().thenReturn(background);
-		
-		ApiConfiguration config = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").envDetail(Mockito.mock(EnvironmentDetail.class)).build();
-		
-		appender.activate(config);
-
-		Mockito.when(background.isRunning()).thenReturn(true);
-
-		appender.appendError(event);
-		
-		appender.close();
-		
-		Mockito.verify(collector).addLogMsg(Mockito.any(LogMsg.class));
-	}
-
-	/**
 	 * testAppend
 	 * @throws Exception 
 	 */
@@ -183,42 +143,7 @@ public class LogAppenderTest {
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
 
 		appender.append(event);
-		appender.appendError(event);
 				
-		appender.close();
-		
-		Mockito.verifyZeroInteractions(collector);	
-	}
-	
-	/**
-	 * testAppendErrorWithoutThrowable
-	 * @throws Exception 
-	 */
-	@Test
-	public void testAppendErrorWithoutThrowable() throws Exception {
-		String event = "log event";
-		
-		EventAdapter<String> adapter = Mockito.mock(EventAdapter.class);
-		Mockito.when(adapter.getThrowable(event)).thenReturn(Optional.<Throwable>absent());
-				
-		LogAppender<String> appender = new LogAppender<String>("logger", adapter);
-		
-		LogCollector collector = Mockito.mock(LogCollector.class);
-		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
-
-		LogBackgroundService background = PowerMockito.mock(LogBackgroundService.class);
-		Mockito.when(background.startAsync()).thenReturn(Mockito.mock(Service.class));
-		Mockito.when(background.stopAsync()).thenReturn(Mockito.mock(Service.class));
-		PowerMockito.whenNew(LogBackgroundService.class).withAnyArguments().thenReturn(background);
-		
-		ApiConfiguration config = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").envDetail(Mockito.mock(EnvironmentDetail.class)).build();
-		
-		appender.activate(config);
-
-		Mockito.when(background.isRunning()).thenReturn(true);
-
-		appender.appendError(event);
-		
 		appender.close();
 		
 		Mockito.verifyZeroInteractions(collector);	

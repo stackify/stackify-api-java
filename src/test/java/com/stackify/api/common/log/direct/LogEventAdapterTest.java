@@ -113,4 +113,22 @@ public class LogEventAdapterTest {
 		Assert.assertEquals(event.getTimestamp(), logMsg.getEpochMs().longValue());
 		Assert.assertNull(logMsg.getLevel());
 	}
+	
+	/**
+	 * testIsErrorLevel
+	 */
+	@Test
+	public void testIsErrorLevel() {
+		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+		LogEventAdapter adapter = new LogEventAdapter(envDetail);
+		
+		LogEvent debug = LogEvent.newBuilder().level("Debug").message("Message").build();
+		Assert.assertFalse(adapter.isErrorLevel(debug));
+		
+		LogEvent error = LogEvent.newBuilder().level("Error").message("Message").build();
+		Assert.assertTrue(adapter.isErrorLevel(error));
+		
+		LogEvent noLevel = LogEvent.newBuilder().message("Message").build();
+		Assert.assertFalse(adapter.isErrorLevel(noLevel));
+	}
 }

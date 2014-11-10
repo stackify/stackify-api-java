@@ -44,6 +44,21 @@ public class LogEvent {
 	private final long timestamp;
 	
 	/**
+	 * Class that logged the event
+	 */
+	private final String className;
+	
+	/**
+	 * Method that logged the event
+	 */
+	private final String methodName;
+	
+	/**
+	 * Line number that logged the event
+	 */
+	private final int lineNumber;
+	
+	/**
 	 * @return the level
 	 */
 	public String getLevel() {
@@ -72,6 +87,27 @@ public class LogEvent {
 	}
 
 	/**
+	 * @return the className
+	 */
+	public String getClassName() {
+		return className;
+	}
+
+	/**
+	 * @return the methodName
+	 */
+	public String getMethodName() {
+		return methodName;
+	}
+
+	/**
+	 * @return the lineNumber
+	 */
+	public int getLineNumber() {
+		return lineNumber;
+	}
+
+	/**
 	 * @param builder The Builder object that contains all of the values for initialization
 	 */
 	private LogEvent(final Builder builder) {
@@ -79,6 +115,9 @@ public class LogEvent {
 	    this.message = builder.message;
 	    this.exception = builder.exception;
 	    this.timestamp = System.currentTimeMillis();
+	    this.className = builder.className;
+	    this.methodName = builder.methodName;
+	    this.lineNumber = builder.lineNumber;
 	}
 
 	/**
@@ -107,7 +146,22 @@ public class LogEvent {
 		 * The builder's exception
 		 */
 		private Throwable exception;
-		
+
+		/**
+		 * The builder's className
+		 */
+		private String className;
+
+		/**
+		 * The builder's methodName
+		 */
+		private String methodName;
+
+		/**
+		 * The builder's lineNumber
+		 */
+		private int lineNumber;
+
 		/**
 		 * Sets the builder's level
 		 * @param level The level to be set
@@ -139,6 +193,36 @@ public class LogEvent {
 		}
 		
 		/**
+		 * Sets the builder's className
+		 * @param className The className to be set
+		 * @return Reference to the current object
+		 */
+		public Builder className(final String className) {
+		    this.className = className;
+		    return this;
+		}
+		
+		/**
+		 * Sets the builder's methodName
+		 * @param methodName The methodName to be set
+		 * @return Reference to the current object
+		 */
+		public Builder methodName(final String methodName) {
+		    this.methodName = methodName;
+		    return this;
+		}
+		
+		/**
+		 * Sets the builder's lineNumber
+		 * @param lineNumber The lineNumber to be set
+		 * @return Reference to the current object
+		 */
+		public Builder lineNumber(final int lineNumber) {
+		    this.lineNumber = lineNumber;
+		    return this;
+		}
+
+		/**
 		 * @return A new object constructed from this builder
 		 */
 		public LogEvent build() {
@@ -158,6 +242,9 @@ public class LogEvent {
 	                  .add("message", message)
 	                  .add("exception", exception)
 	                  .add("timestamp", timestamp)
+	                  .add("className", className)
+	                  .add("methodName", methodName)
+	                  .add("lineNumber", lineNumber)
 	                  .toString();
 	}
 }

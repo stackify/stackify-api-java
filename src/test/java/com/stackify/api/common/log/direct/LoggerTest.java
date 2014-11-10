@@ -99,4 +99,28 @@ public class LoggerTest {
 		Assert.assertEquals(message, eventCaptor.getValue().getMessage());
 		Assert.assertEquals(exception, eventCaptor.getValue().getException());
 	}
+	
+	/**
+	 * testQueueErrorMessage
+	 */
+	@Test
+	public void testQueueErrorMessage() {
+		LogAppender<LogEvent> appender = Mockito.mock(LogAppender.class);
+		PowerMockito.mockStatic(LogManager.class);
+		PowerMockito.when(LogManager.getAppender()).thenReturn(appender);
+
+		String level = "ERROR";
+		String message = "message";
+		Logger.queueMessage(level, message);
+		
+		ArgumentCaptor<LogEvent> eventCaptor = ArgumentCaptor.forClass(LogEvent.class);
+		Mockito.verify(appender).append(eventCaptor.capture());
+		
+		Assert.assertEquals(level, eventCaptor.getValue().getLevel());
+		Assert.assertEquals(message, eventCaptor.getValue().getMessage());
+		Assert.assertNull(eventCaptor.getValue().getException());
+		Assert.assertNotNull(eventCaptor.getValue().getClassName());
+		Assert.assertNotNull(eventCaptor.getValue().getMethodName());
+		Assert.assertTrue(0 < eventCaptor.getValue().getLineNumber());
+	}
 }
