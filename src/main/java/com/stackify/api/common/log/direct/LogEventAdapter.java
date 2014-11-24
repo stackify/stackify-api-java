@@ -23,8 +23,10 @@ import com.google.common.collect.Maps;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
+import com.stackify.api.WebRequestDetail;
 import com.stackify.api.common.lang.Throwables;
 import com.stackify.api.common.log.EventAdapter;
+import com.stackify.api.common.log.ServletLogContext;
 
 /**
  * LogEvent
@@ -68,7 +70,19 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		} else {
 			builder.error(Throwables.toErrorItem(event.getMessage(), event.getClassName(), event.getMethodName(), event.getLineNumber()));
 		}
+
+		Optional<String> user = ServletLogContext.getUser();
 		
+		if (user.isPresent()) {
+			builder.userName(user.get());
+		}
+		
+		Optional<WebRequestDetail> webRequest = ServletLogContext.getWebRequest();
+		
+		if (webRequest.isPresent()) {
+			builder.webRequestDetail(webRequest.get());
+		}
+
 		builder.serverVariables(Maps.fromProperties(System.getProperties()));
 		
 		return builder.build();
@@ -86,6 +100,12 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		
 		if (event.getLevel() != null) {
 			builder.level(event.getLevel().toLowerCase());
+		}
+		
+		Optional<String> transactionId = ServletLogContext.getTransactionId();
+		
+		if (transactionId.isPresent()) {
+			builder.transId(transactionId.get());
 		}
 						
 		return builder.build();
