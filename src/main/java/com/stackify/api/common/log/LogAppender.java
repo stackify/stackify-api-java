@@ -35,27 +35,27 @@ import com.stackify.api.common.error.ErrorGovernor;
  * @author Eric Martin
  */
 public class LogAppender<T> implements Closeable {
-		
+
 	/**
 	 * Logger project name
 	 */
 	private final String logger;
-	
+
 	/**
 	 * Maps from specific log implementation events to our API
 	 */
 	private final EventAdapter<T> eventAdapter;
-	
+
 	/**
 	 * Collector for LogMsg objects that need to be sent to Stackify
 	 */
 	private LogCollector collector = null;
-	
+
 	/**
 	 * Background thread for sending log events to Stackify
 	 */
 	private LogBackgroundService backgroundService = null;
-	
+
 	/**
 	 * Client side error governor to suppress duplicate errors
 	 */
@@ -72,7 +72,7 @@ public class LogAppender<T> implements Closeable {
 		this.logger = logger;
 		this.eventAdapter = eventAdapter;
 	}
-	
+
 	/**
 	 * Activates the appender
 	 * @param apiConfig API configuration
@@ -83,7 +83,7 @@ public class LogAppender<T> implements Closeable {
 		Preconditions.checkArgument(!apiConfig.getApiUrl().isEmpty());
 		Preconditions.checkNotNull(apiConfig.getApiKey());
 		Preconditions.checkArgument(!apiConfig.getApiKey().isEmpty());
-		
+
 		// Single JSON object mapper for all services
 
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -91,25 +91,25 @@ public class LogAppender<T> implements Closeable {
 		// build the app identity service
 
 		AppIdentityService appIdentityService = new AppIdentityService(apiConfig, objectMapper);
-		
+
 		// build the services for collecting and sending log messages
 
 		this.collector = new LogCollector(logger, apiConfig.getEnvDetail(), appIdentityService);
-		
+
 		LogSender sender = new LogSender(apiConfig, objectMapper);
-		
+
 		// build the background service to asynchronously post errors to Stackify
 		// startup the background service
-				
+
 		this.backgroundService = new LogBackgroundService(collector, sender);
-		
+
 		try {
 			backgroundService.startAsync().awaitRunning(5, TimeUnit.SECONDS);
 		} catch (TimeoutException e) {
 			Throwables.propagate(e);
 		}
 	}
-	
+
 	/**
 	 * @see java.io.Closeable#close()
 	 */
@@ -123,39 +123,39 @@ public class LogAppender<T> implements Closeable {
 			}
 		}
 	}
-	
+
 	/**
 	 * Adds the log message to the collector
-	 * @param logMsg 
+	 * @param event
 	 */
 	public void append(final T event) {
 
 		// make sure we can append the log message
-		
+
 		if (backgroundService == null) {
 			return;
 		}
-		
+
 		if (!backgroundService.isRunning()) {
 			return;
 		}
-		
+
 		// build the log message and queue it to be sent to Stackify
-		
+
 		Optional<Throwable> exception = eventAdapter.getThrowable(event);
-		
+
 		Optional<StackifyError> error = Optional.absent();
-		
+
 		if ((exception.isPresent()) || (eventAdapter.isErrorLevel(event))) {
 			StackifyError e = eventAdapter.getStackifyError(event, exception.orNull());
-			
+
 			if (errorGovernor.errorShouldBeSent(e)) {
 				error = Optional.of(e);
 			}
 		}
-		
+
 		LogMsg logMsg = eventAdapter.getLogMsg(event, error);
-		
+
 		collector.addLogMsg(logMsg);
 	}
 }

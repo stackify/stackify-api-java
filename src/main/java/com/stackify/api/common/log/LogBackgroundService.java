@@ -23,7 +23,7 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 
 /**
  * LogSenderService
- * 
+ *
  * @author Eric Martin
  */
 public class LogBackgroundService extends AbstractScheduledService {
@@ -32,12 +32,12 @@ public class LogBackgroundService extends AbstractScheduledService {
 	 * The service logger
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(LogBackgroundService.class);
-	
+
 	/**
 	 * The scheduler that determines delay timing after errors
 	 */
 	private final LogBackgroundServiceScheduler scheduler = new LogBackgroundServiceScheduler();
-	
+
 	/**
 	 * The LogMsg collector
 	 */
@@ -47,10 +47,9 @@ public class LogBackgroundService extends AbstractScheduledService {
 	 * The LogMsgGroup HTTP sender
 	 */
 	private final LogSender sender;
-	
+
 	/**
 	 * Constructor
-	 * @param appIdentityService The application identity service
 	 * @param collector The LogMsg collector
 	 * @param sender The LogMsgGroup HTTP sender
 	 */
@@ -60,7 +59,7 @@ public class LogBackgroundService extends AbstractScheduledService {
 		this.collector = collector;
 		this.sender = sender;
 	}
-		
+
 	/**
 	 * @see com.google.common.util.concurrent.AbstractScheduledService#serviceName()
 	 */
@@ -76,7 +75,7 @@ public class LogBackgroundService extends AbstractScheduledService {
 	protected Scheduler scheduler() {
 		return scheduler;
 	}
-		
+
 	/**
 	 * @see com.google.common.util.concurrent.AbstractScheduledService#shutDown()
 	 */
@@ -87,7 +86,7 @@ public class LogBackgroundService extends AbstractScheduledService {
 		} catch (Throwable t) {
 			LOGGER.info("Exception flushing log collector during shut down", t);
 		}
-		
+
 		super.shutDown();
 	}
 
@@ -95,7 +94,7 @@ public class LogBackgroundService extends AbstractScheduledService {
 	 * @see com.google.common.util.concurrent.AbstractScheduledService#runOneIteration()
 	 */
 	@Override
-	protected void runOneIteration() {		
+	protected void runOneIteration() {
 		try {
 			int numSent = collector.flush(sender);
 			scheduler.update(numSent);
