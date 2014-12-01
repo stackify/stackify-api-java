@@ -5,6 +5,66 @@
 
 Stackify API for Java
 
+Errors and Logs Overview:
+
+http://docs.stackify.com/m/7787/l/189767
+
+Sign Up for a Trial:
+
+http://www.stackify.com/sign-up/
+
+Log4j 1.2 Appender:
+
+https://github.com/stackify/stackify-log-log4j12
+
+Logback Appender:
+
+https://github.com/stackify/stackify-log-logback
+
+## Configuration and Usage for Direct Logger
+
+You need a stackify-api.properties file on your classpath that defines the configuration required for the Log API:
+```
+stackify.apiKey=YOUR_API_KEY
+stackify.application=YOUR_APPLICATION_NAME
+stackify.environment=YOUR_ENVIRONMENT
+```
+
+Note: *If you are logging from a device that has the stackify-agent installed, the environment setting is optional. We will use the environment associated to your device in Stackify.*
+
+Log a message to Stackify 
+```java
+Logger.queueMessage("info", "Test message");
+```
+
+Log an exception to Stackify 
+```java
+Logger.queueException("error", e);
+```
+
+Log a message and exception to Stackify 
+```java
+Logger.queueException("error", "Test message", e);
+```
+
+Be sure to shutdown the Direct Logger to flush this appender of any messages and shutdown the background thread:
+```java
+LogManager.shutdown();
+```
+
+## Installation
+
+Add it as a maven dependency:
+```xml
+<dependency>
+    <groupId>com.stackify</groupId>
+    <artifactId>stackify-api-java</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+Note: *We are dependent on the Guava project from Google. We require version 15.0 (or beyond) for the background thread that sends data back to Stackify.*
+
 ## License
 
 Copyright 2013 Stackify, LLC.
