@@ -1,9 +1,9 @@
-# stackify-api-common
+# stackify-api-java
 
-[![Build Status](https://travis-ci.org/stackify/stackify-api-common.png)](https://travis-ci.org/stackify/stackify-api-common)
-[![Coverage Status](https://coveralls.io/repos/stackify/stackify-api-common/badge.png?branch=master)](https://coveralls.io/r/stackify/stackify-api-common?branch=master)
+[![Build Status](https://travis-ci.org/stackify/stackify-api-java.png)](https://travis-ci.org/stackify/stackify-api-java)
+[![Coverage Status](https://coveralls.io/repos/stackify/stackify-api-java/badge.png?branch=master)](https://coveralls.io/r/stackify/stackify-api-java?branch=master)
 
-Stackify API Common
+Stackify API for Java
 
 ## License
 
