@@ -71,32 +71,34 @@ public class ApiConfigurations {
 		
 		try {
 			URL confFileUrl = ApiConfigurations.class.getResource("/stackify-api.properties");
-			File confFile = new File(confFileUrl.toURI());
-						
-			if (confFile.exists()) {
-	
-				confFileReader = new FileReader(confFile);
 			
-				Properties confProps = new Properties();
-				confProps.load(confFileReader);
+			if (confFileUrl != null) {
+				File confFile = new File(confFileUrl.toURI());
+							
+				if (confFile.exists()) {
+		
+					confFileReader = new FileReader(confFile);
 				
-				String apiUrl = null;
-				
-				if (confProps.containsKey("stackify.apiUrl")) {
-					apiUrl = confProps.getProperty("stackify.apiUrl");
+					Properties confProps = new Properties();
+					confProps.load(confFileReader);
+					
+					String apiUrl = null;
+					
+					if (confProps.containsKey("stackify.apiUrl")) {
+						apiUrl = confProps.getProperty("stackify.apiUrl");
+					}
+					
+					String apiKey = confProps.getProperty("stackify.apiKey");
+					String application = confProps.getProperty("stackify.application");
+					String environment = confProps.getProperty("stackify.environment");
+					
+					builder.apiUrl(apiUrl);
+					builder.apiKey(apiKey);
+					builder.application(application);
+					builder.environment(environment);
+					builder.envDetail(EnvironmentDetails.getEnvironmentDetail(application, environment));
 				}
-				
-				String apiKey = confProps.getProperty("stackify.apiKey");
-				String application = confProps.getProperty("stackify.application");
-				String environment = confProps.getProperty("stackify.environment");
-				
-				builder.apiUrl(apiUrl);
-				builder.apiKey(apiKey);
-				builder.application(application);
-				builder.environment(environment);
-				builder.envDetail(EnvironmentDetails.getEnvironmentDetail(application, environment));
 			}
-			
 		} catch (Throwable t) {
 			LOGGER.error("Exception reading stackify-api.properties configuration file", t);
 		} finally {
