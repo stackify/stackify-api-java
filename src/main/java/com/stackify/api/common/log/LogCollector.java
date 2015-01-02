@@ -22,7 +22,6 @@ import java.util.Queue;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.stackify.api.AppIdentity;
@@ -31,6 +30,7 @@ import com.stackify.api.LogMsg;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.http.HttpException;
+import com.stackify.api.common.lang.EvictingQueue;
 
 /**
  * LogCollector
@@ -61,8 +61,8 @@ public class LogCollector {
 	/**
 	 * The queue of objects to be transmitted
 	 */
-	private final Queue<LogMsg> queue = Queues.synchronizedQueue(EvictingQueue.<LogMsg>create(10000));
-
+	private final Queue<LogMsg> queue = Queues.synchronizedQueue(new EvictingQueue<LogMsg>(10000));
+	
 	/**
 	 * Constructor
 	 * @param logger The logger (project) name

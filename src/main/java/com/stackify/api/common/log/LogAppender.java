@@ -18,7 +18,6 @@ package com.stackify.api.common.log;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -104,8 +103,8 @@ public class LogAppender<T> implements Closeable {
 		this.backgroundService = new LogBackgroundService(collector, sender);
 
 		try {
-			backgroundService.startAsync().awaitRunning(5, TimeUnit.SECONDS);
-		} catch (TimeoutException e) {
+			backgroundService.start().get(5, TimeUnit.SECONDS);
+		} catch (Exception e) {
 			Throwables.propagate(e);
 		}
 	}
@@ -117,8 +116,8 @@ public class LogAppender<T> implements Closeable {
 	public void close() throws IOException {
 		if (backgroundService != null) {
 			try {
-				backgroundService.stopAsync().awaitTerminated(5, TimeUnit.SECONDS);
-			} catch (TimeoutException e) {
+				backgroundService.stop().get(5, TimeUnit.SECONDS);
+			} catch (Exception e) {
 				Throwables.propagate(e);
 			}
 		}
