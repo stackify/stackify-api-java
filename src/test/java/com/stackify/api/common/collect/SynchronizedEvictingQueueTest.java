@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.stackify.api.common.lang;
+package com.stackify.api.common.collect;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.stackify.api.common.collect.SynchronizedEvictingQueue;
 
 /**
  * EvictingQueue JUnit Test
  * @author Eric Martin
  */
-public class EvictingQueueTest {
+public class SynchronizedEvictingQueueTest {
 	
 	/**
 	 * testAdd
 	 */
 	@Test
 	public void testAdd() {
-		EvictingQueue<String> queue = new EvictingQueue<String>(3);
+		SynchronizedEvictingQueue<String> queue = new SynchronizedEvictingQueue<String>(3);
 		Assert.assertEquals(0, queue.size());
 		
 		queue.add("a");		
@@ -56,7 +57,7 @@ public class EvictingQueueTest {
 	 */
 	@Test
 	public void testOffer() {
-		EvictingQueue<String> queue = new EvictingQueue<String>(3);
+		SynchronizedEvictingQueue<String> queue = new SynchronizedEvictingQueue<String>(3);
 		Assert.assertEquals(0, queue.size());
 		
 		queue.offer("a");		
@@ -81,7 +82,7 @@ public class EvictingQueueTest {
 	 */
 	@Test
 	public void testAddAll() {
-		EvictingQueue<String> queue = new EvictingQueue<String>(3);
+		SynchronizedEvictingQueue<String> queue = new SynchronizedEvictingQueue<String>(3);
 		Assert.assertEquals(0, queue.size());
 		
 		queue.addAll(Lists.newArrayList("a", "b", "c", "d"));

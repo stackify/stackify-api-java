@@ -38,8 +38,7 @@ public class LogBackgroundServiceTest {
 		LogCollector collector = Mockito.mock(LogCollector.class);
 		LogSender sender = Mockito.mock(LogSender.class);
 		LogBackgroundService service = new LogBackgroundService(collector, sender);
-		
-		Assert.assertEquals("Stackify_LogBackgroundService", service.serviceName());
+
 		Assert.assertNotNull(service.scheduler());
 	}
 		

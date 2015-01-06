@@ -19,14 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.AbstractScheduledService;
+import com.stackify.api.common.concurrent.BackgroundService;
 
 /**
  * LogSenderService
  *
  * @author Eric Martin
  */
-public class LogBackgroundService extends AbstractScheduledService {
+public class LogBackgroundService extends BackgroundService {
 
 	/**
 	 * The service logger
@@ -58,14 +58,6 @@ public class LogBackgroundService extends AbstractScheduledService {
 		Preconditions.checkNotNull(sender);
 		this.collector = collector;
 		this.sender = sender;
-	}
-
-	/**
-	 * @see com.google.common.util.concurrent.AbstractScheduledService#serviceName()
-	 */
-	@Override
-	protected String serviceName() {
-		return "Stackify_LogBackgroundService";
 	}
 
 	/**
