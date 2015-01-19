@@ -34,16 +34,9 @@ public class EnvironmentDetails {
 	 */
 	public static EnvironmentDetail getEnvironmentDetail(final String application, final String environment) {
 		
-		// lookup the hostname
+		// lookup the host name
 
-		String hostName = null;
-		
-		try {
-			InetAddress addr = InetAddress.getLocalHost();
-			hostName = addr.getHostName();
-		} catch (Throwable t) {
-			// Do nothing
-		}
+		String hostName = getHostName();
 		
 		// lookup the current path
 		
@@ -58,6 +51,39 @@ public class EnvironmentDetails {
 		environmentBuilder.configuredEnvironmentName(environment);
 		
 		return environmentBuilder.build();
+	}
+	
+	/**
+	 * @return The host name 
+	 */
+	private static String getHostName() {
+		
+		// HOSTNAME environment variable
+		
+		try {
+			String hostName = System.getenv("HOSTNAME");
+			
+			if ((hostName != null) && (0 < hostName.length())) {
+				return hostName;
+			}
+		} catch (Throwable t) {
+			// Do nothing
+		}
+		
+		// InetAddress.getLocalHost().getHostName()
+		
+		try {
+			InetAddress addr = InetAddress.getLocalHost();
+			String hostName = addr.getHostName();
+			
+			if ((hostName != null) && (0 < hostName.length())) {
+				return hostName;
+			}
+		} catch (Throwable t) {
+			// Do nothing
+		}
+
+		return null;
 	}
 	
 	/**
