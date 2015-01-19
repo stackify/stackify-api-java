@@ -33,7 +33,7 @@ import com.stackify.api.EnvironmentDetail;
  * @author Eric Martin
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({EnvironmentDetails.class, InetAddress.class})
+@PrepareForTest({EnvironmentDetails.class, System.class, InetAddress.class})
 public class EnvironmentDetailsTest {
 
 	/**
@@ -45,12 +45,10 @@ public class EnvironmentDetailsTest {
 		String application = "application";
 		String environment = "environment";
 		String hostName = "hostName";
-		
-		InetAddress inetAddress = PowerMockito.mock(InetAddress.class);
-		PowerMockito.when(inetAddress.getHostName()).thenReturn(hostName);
-		
-		PowerMockito.mockStatic(InetAddress.class);
-		PowerMockito.when(InetAddress.getLocalHost()).thenReturn(inetAddress);
+				
+		PowerMockito.mockStatic(System.class);
+		PowerMockito.when(System.getenv("HOSTNAME")).thenReturn(hostName);
+		PowerMockito.when(System.getProperty("user.dir")).thenReturn("/some/dir/");
 		
 		EnvironmentDetail env = EnvironmentDetails.getEnvironmentDetail(application, environment);
 		
@@ -64,22 +62,30 @@ public class EnvironmentDetailsTest {
 	}
 	
 	/**
-	 * testGetEnvironmentDetailHostnameException
+	 * testGetEnvironmentDetailWithoutHostnameEnvVar
 	 * @throws UnknownHostException 
 	 */
 	@Test
-	public void testGetEnvironmentDetailHostnameException() throws UnknownHostException {
+	public void testGetEnvironmentDetailWithoutHostnameEnvVar() throws UnknownHostException {
 		String application = "application";
 		String environment = "environment";
-				
+		String hostName = "hostName";
+		
+		PowerMockito.mockStatic(System.class);
+		PowerMockito.when(System.getenv("HOSTNAME")).thenReturn(null);
+		PowerMockito.when(System.getProperty("user.dir")).thenReturn("/some/dir/");
+
+		InetAddress inetAddress = PowerMockito.mock(InetAddress.class);
+		PowerMockito.when(inetAddress.getHostName()).thenReturn(hostName);
+		
 		PowerMockito.mockStatic(InetAddress.class);
-		PowerMockito.when(InetAddress.getLocalHost()).thenThrow(new RuntimeException());
+		PowerMockito.when(InetAddress.getLocalHost()).thenReturn(inetAddress);
 		
 		EnvironmentDetail env = EnvironmentDetails.getEnvironmentDetail(application, environment);
 		
 		Assert.assertNotNull(env);
 		
-		Assert.assertNull(env.getDeviceName());
+		Assert.assertEquals(hostName, env.getDeviceName());
 		Assert.assertNotNull(env.getAppLocation());
 		Assert.assertNull(env.getAppName());
 		Assert.assertEquals(application, env.getConfiguredAppName());
