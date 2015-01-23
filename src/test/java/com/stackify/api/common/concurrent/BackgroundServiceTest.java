@@ -15,10 +15,9 @@
  */
 package com.stackify.api.common.concurrent;
 
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * BackgroundService JUnit Test
@@ -27,32 +26,67 @@ import org.junit.Test;
 public class BackgroundServiceTest {
 
 	/**
-	 * testExecutor
+	 * testStart
 	 */
 	@Test
-	public void testExecutor() {
-		MyBackgroundService service = new MyBackgroundService();		
-		Assert.assertNotNull(service.executor());
+	public void testLifecycle() {
+		TestBackgroundService service = Mockito.spy(new TestBackgroundService());
+		
+		Assert.assertFalse(service.isRunning());
+		
+		service.start();
+		
+		Assert.assertTrue(service.isRunning());
+		
+		Mockito.verify(service).startUp();
+
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+		}
+		
+		Mockito.verify(service).runOneIteration();
+		Mockito.verify(service).getNextScheduleDelayMilliseconds();
+		
+		service.stop();
+
+		Mockito.verify(service).shutDown();
+
+		Assert.assertFalse(service.isRunning());
 	}
 	
 	/**
-	 * MyBackgroundService
+	 * TestBackgroundService
 	 */
-	private static class MyBackgroundService extends BackgroundService {
+	private static class TestBackgroundService extends BackgroundService {
 
 		/**
-		 * @see com.google.common.util.concurrent.AbstractScheduledService#runOneIteration()
+		 * @see com.stackify.api.common.concurrent.BackgroundService#startUp()
 		 */
 		@Override
-		protected void runOneIteration() {	
+		protected void startUp() {
 		}
 
 		/**
-		 * @see com.google.common.util.concurrent.AbstractScheduledService#scheduler()
+		 * @see com.stackify.api.common.concurrent.BackgroundService#runOneIteration()
 		 */
 		@Override
-		protected Scheduler scheduler() {
-			return Scheduler.newFixedRateSchedule(0, 5, TimeUnit.SECONDS);
+		protected void runOneIteration() {
+		}
+
+		/**
+		 * @see com.stackify.api.common.concurrent.BackgroundService#getNextScheduleDelayMilliseconds()
+		 */
+		@Override
+		protected long getNextScheduleDelayMilliseconds() {
+			return 1000;
+		}
+
+		/**
+		 * @see com.stackify.api.common.concurrent.BackgroundService#shutDown()
+		 */
+		@Override
+		protected void shutDown() {
 		}
 	}
 }

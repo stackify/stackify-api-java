@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 
-import com.google.common.base.Preconditions;
+import com.stackify.api.common.util.Preconditions;
 
 /**
  * SynchronizedEvictingQueue

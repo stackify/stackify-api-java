@@ -17,12 +17,10 @@ package com.stackify.api.common.log;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.stackify.api.AppIdentity;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
@@ -30,6 +28,7 @@ import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.collect.SynchronizedEvictingQueue;
 import com.stackify.api.common.http.HttpException;
+import com.stackify.api.common.util.Preconditions;
 
 /**
  * LogCollector
@@ -99,14 +98,14 @@ public class LogCollector {
 		int maxToSend = queue.size();
 
 		if (0 < maxToSend) {
-			Optional<AppIdentity> appIdentity = appIdentityService.getAppIdentity();
+			AppIdentity appIdentity = appIdentityService.getAppIdentity();
 
 			while (numSent < maxToSend) {
 
 				// get the next batch of messages
 				int batchSize = Math.min(maxToSend - numSent, MAX_BATCH);
 
-				List<LogMsg> batch = Lists.newArrayListWithCapacity(batchSize);
+				List<LogMsg> batch = new ArrayList<LogMsg>(batchSize);
 
 				for (int i = 0; i < batchSize; ++i) {
 					batch.add(queue.remove());
@@ -140,7 +139,7 @@ public class LogCollector {
 	 * @return LogMessage group object with
 	 */
 	private LogMsgGroup createLogMessageGroup (
-		final List<LogMsg> batch, final String logger, final EnvironmentDetail envDetail, final Optional<AppIdentity> appIdentity
+		final List<LogMsg> batch, final String logger, final EnvironmentDetail envDetail, final AppIdentity appIdentity
 	) {
 		final LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
 
@@ -152,17 +151,17 @@ public class LogCollector {
 			.appName(envDetail.getConfiguredAppName())
 			.appLoc(envDetail.getAppLocation());
 
-		if (appIdentity.isPresent()) {
+		if (appIdentity != null) {
 			groupBuilder
-				.cdId(appIdentity.get().getDeviceId())
-				.cdAppId(appIdentity.get().getDeviceAppId())
-				.appNameId(appIdentity.get().getAppNameId())
-				.appEnvId(appIdentity.get().getAppEnvId())
-				.envId(appIdentity.get().getEnvId())
-				.env(appIdentity.get().getEnv());
+				.cdId(appIdentity.getDeviceId())
+				.cdAppId(appIdentity.getDeviceAppId())
+				.appNameId(appIdentity.getAppNameId())
+				.appEnvId(appIdentity.getAppEnvId())
+				.envId(appIdentity.getEnvId())
+				.env(appIdentity.getEnv());
 
-			if ((appIdentity.get().getAppName() != null) && (0 < appIdentity.get().getAppName().length())) {
-				groupBuilder.appName(appIdentity.get().getAppName());
+			if ((appIdentity.getAppName() != null) && (0 < appIdentity.getAppName().length())) {
+				groupBuilder.appName(appIdentity.getAppName());
 			}
 		}
 

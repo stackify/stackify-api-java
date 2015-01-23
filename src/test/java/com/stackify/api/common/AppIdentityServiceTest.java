@@ -24,7 +24,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.stackify.api.AppIdentity;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.common.http.HttpClient;
@@ -63,12 +62,11 @@ public class AppIdentityServiceTest {
 
 		AppIdentityService service = new AppIdentityService(apiConfig, objectMapper);
 
-		Optional<AppIdentity> rv = service.getAppIdentity();
+		AppIdentity rv = service.getAppIdentity();
 
 		Assert.assertNotNull(rv);
-		Assert.assertTrue(rv.isPresent());
-		Assert.assertEquals(Integer.valueOf(123), rv.get().getDeviceId());
-		Assert.assertEquals("456", rv.get().getAppNameId());
+		Assert.assertEquals(Integer.valueOf(123), rv.getDeviceId());
+		Assert.assertEquals("456", rv.getAppNameId());
 	}
 	
 	/**
@@ -80,9 +78,8 @@ public class AppIdentityServiceTest {
 		ApiConfiguration apiConfig = ApiConfigurations.fromProperties();
 		AppIdentityService service = new AppIdentityService(apiConfig, objectMapper);
 
-		Optional<AppIdentity> absent = service.getAppIdentity("");
+		AppIdentity absent = service.getAppIdentity("");
 		
-		Assert.assertNotNull(absent);
-		Assert.assertFalse(absent.isPresent());
+		Assert.assertNull(absent);
 	}
 }

@@ -34,18 +34,18 @@ public class ServletLogContextTest {
 	@Test
 	public void testTransactionId() {
 		
-		Assert.assertFalse(ServletLogContext.getTransactionId().isPresent());
+		Assert.assertNull(ServletLogContext.getTransactionId());
 		
 		ServletLogContext.clear();
 		
 		String id = UUID.randomUUID().toString();
 		ServletLogContext.putTransactionId(id);
 		
-		Assert.assertEquals(id, ServletLogContext.getTransactionId().get());
+		Assert.assertEquals(id, ServletLogContext.getTransactionId());
 		
 		ServletLogContext.clear();
 
-		Assert.assertFalse(ServletLogContext.getTransactionId().isPresent());
+		Assert.assertNull(ServletLogContext.getTransactionId());
 	}
 	
 	/**
@@ -54,18 +54,18 @@ public class ServletLogContextTest {
 	@Test
 	public void testUser() {
 		
-		Assert.assertFalse(ServletLogContext.getUser().isPresent());
+		Assert.assertNull(ServletLogContext.getUser());
 		
 		ServletLogContext.clear();
 		
 		String user = UUID.randomUUID().toString();
 		ServletLogContext.putUser(user);
 		
-		Assert.assertEquals(user, ServletLogContext.getUser().get());
+		Assert.assertEquals(user, ServletLogContext.getUser());
 		
 		ServletLogContext.clear();
 
-		Assert.assertFalse(ServletLogContext.getUser().isPresent());
+		Assert.assertNull(ServletLogContext.getUser());
 	}
 	
 	/**
@@ -74,17 +74,17 @@ public class ServletLogContextTest {
 	@Test
 	public void testWebRequest() {
 		
-		Assert.assertFalse(ServletLogContext.getWebRequest().isPresent());
+		Assert.assertNull(ServletLogContext.getWebRequest());
 		
 		ServletLogContext.clear();
 		
 		WebRequestDetail wrd = WebRequestDetail.newBuilder().build();
 		ServletLogContext.putWebRequest(wrd);
 		
-		Assert.assertNotNull(ServletLogContext.getWebRequest().get());
+		Assert.assertNotNull(ServletLogContext.getWebRequest());
 		
 		ServletLogContext.clear();
 
-		Assert.assertFalse(ServletLogContext.getWebRequest().isPresent());
+		Assert.assertNull(ServletLogContext.getWebRequest());
 	}
 }

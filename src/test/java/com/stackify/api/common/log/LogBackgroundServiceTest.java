@@ -39,7 +39,7 @@ public class LogBackgroundServiceTest {
 		LogSender sender = Mockito.mock(LogSender.class);
 		LogBackgroundService service = new LogBackgroundService(collector, sender);
 
-		Assert.assertNotNull(service.scheduler());
+		Assert.assertFalse(service.isRunning());
 	}
 		
 	/**

@@ -20,7 +20,6 @@ import java.io.IOException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.google.common.base.Optional;
 import com.stackify.api.AppIdentity;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
@@ -62,7 +61,7 @@ public class LogCollectorTest {
 		Mockito.when(sender.send(Mockito.any(LogMsgGroup.class))).thenReturn(200);
 
 		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(Optional.<AppIdentity>absent());
+		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(null);
 		
 		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
 		
@@ -87,7 +86,7 @@ public class LogCollectorTest {
 		Mockito.when(sender.send(Mockito.any(LogMsgGroup.class))).thenReturn(200);
 
 		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(Optional.of(Mockito.mock(AppIdentity.class)));
+		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(Mockito.mock(AppIdentity.class));
 
 		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
 		

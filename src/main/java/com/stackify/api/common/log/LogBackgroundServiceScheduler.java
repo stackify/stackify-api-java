@@ -16,9 +16,7 @@
 package com.stackify.api.common.log;
 
 import java.net.HttpURLConnection;
-import java.util.concurrent.TimeUnit;
 
-import com.google.common.util.concurrent.AbstractScheduledService.CustomScheduler;
 import com.stackify.api.common.http.HttpException;
 
 /**
@@ -26,7 +24,7 @@ import com.stackify.api.common.http.HttpException;
  *
  * @author Eric Martin
  */
-public class LogBackgroundServiceScheduler extends CustomScheduler {
+public class LogBackgroundServiceScheduler {
 
 	/**
 	 * One second (milliseconds)
@@ -145,13 +143,5 @@ public class LogBackgroundServiceScheduler extends CustomScheduler {
 	 */
 	public long getLastHttpError() {
 		return lastHttpError;
-	}
-
-	/**
-	 * @see com.google.common.util.concurrent.AbstractScheduledService.CustomScheduler#getNextSchedule()
-	 */
-	@Override
-	protected Schedule getNextSchedule() {
-		return new Schedule(scheduleDelay, TimeUnit.MILLISECONDS);
 	}
 }

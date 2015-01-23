@@ -14,9 +14,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.zip.GZIPOutputStream;
 
-import com.google.common.base.Preconditions;
-import com.google.common.io.CharStreams;
 import com.stackify.api.common.ApiConfiguration;
+import com.stackify.api.common.util.CharStreams;
+import com.stackify.api.common.util.Preconditions;
 
 /**
  * HttpClient

@@ -15,30 +15,168 @@
  */
 package com.stackify.api.common.concurrent;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.common.util.concurrent.AbstractScheduledService;
-import com.google.common.util.concurrent.MoreExecutors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * BackgroundService
  * @author Eric Martin
  */
-public abstract class BackgroundService extends AbstractScheduledService 
+public abstract class BackgroundService
 {
 	/**
-	 * @see com.google.common.util.concurrent.AbstractScheduledService#executor()
+	 * The service logger
 	 */
-	@Override
-	protected ScheduledExecutorService executor() {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BackgroundService.class);
 
-		ScheduledExecutorService executor = super.executor();
+	/**
+	 * Executor service
+	 */
+	private ScheduledExecutorService executorService;
+	
+	/**
+	 * Next iteration
+	 */
+	private ScheduledFuture<Void> currentFuture;
+
+	/**
+	 * Lock to protect start/stop/iteration/reschedule
+	 */
+	private final ReentrantLock lock = new ReentrantLock();
+
+	/**
+	 * Start the background service
+	 * @throws Exception
+	 */
+	protected abstract void startUp() throws Exception;
+	
+	/**
+	 * Run one iteration of the background service
+	 * @throws Exception
+	 */
+	protected abstract void runOneIteration() throws Exception;
+
+	/**
+	 * @return The next schedule delay (between iterations) in milliseconds
+	 */
+	protected abstract long getNextScheduleDelayMilliseconds();
+	
+	/**
+	 * Shut down the background service
+	 * @throws Exception
+	 */
+	protected abstract void shutDown() throws Exception;
+
+	/**
+	 * Start the background service/thread
+	 */
+	public void start() {
 		
-        // Add a listener to shutdown the executor after the service is stopped.
-		// This is to work around a feature in Guava 13.0.1 that does not stop the executor when the service stops.
-	       
-		addListener(new ShutdownListener(executor), MoreExecutors.sameThreadExecutor());
+		lock.lock();
+		
+		try {
+			executorService = Executors.newSingleThreadScheduledExecutor();
+			
+			try {
+				startUp();
+			} catch (Throwable t) {
+				LOGGER.info("Exception in service start up", t);
+			}
+			
+			currentFuture = executorService.schedule(new RunOneIterationAndReschedule(), 0, TimeUnit.MILLISECONDS);
+		} finally {
+			lock.unlock();
+		}
+	}
+	
+	/**
+	 * @return True if the background service is running, false otherwise
+	 */
+	public boolean isRunning() {
+		if (executorService != null) {
+			if (!executorService.isShutdown() && !executorService.isTerminated()) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Stops the background service/thread
+	 */
+	public void stop() {
+		
+		lock.lock();
+		
+		try {
+			currentFuture.cancel(false);
+			
+			try {
+				shutDown();
+			} catch (Throwable t) {
+				LOGGER.info("Exception in service shut down", t);
+			}
+			
+			try {
+				executorService.shutdown();
+				executorService.awaitTermination(5, TimeUnit.SECONDS);
+			} catch (Throwable t) {
+				LOGGER.info("Exception in service termination", t);
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
+	
+	/**
+	 * RunOneIterationAndReschedule
+	 */
+	private class RunOneIterationAndReschedule implements Callable<Void> {
 
-        return executor;
+		/**
+		 * @see java.util.concurrent.Callable#call()
+		 */
+		@Override
+		public Void call() throws Exception {
+			
+			// run one iteration
+			
+			lock.lock();
+			
+			try {
+				runOneIteration();
+			} catch (Throwable t) {
+				LOGGER.info("Exception in iteration", t);
+			} finally {
+				lock.unlock();
+			}
+			
+			// reschedule
+			
+			lock.lock();
+			
+			try {
+				if (!currentFuture.isCancelled()) {
+					long nextDelay = getNextScheduleDelayMilliseconds();
+					currentFuture = executorService.schedule(this, nextDelay, TimeUnit.MILLISECONDS);
+				}
+			} catch (Throwable t) {
+				LOGGER.info("Exception rescheduling iteration", t);
+			} finally {
+				lock.unlock();
+			}
+			
+			// done
+
+			return null;
+		}
 	}
 }

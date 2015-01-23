@@ -15,11 +15,11 @@
  */
 package com.stackify.api.common.collect;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
-import com.stackify.api.common.collect.SynchronizedEvictingQueue;
 
 /**
  * EvictingQueue JUnit Test
@@ -85,7 +85,13 @@ public class SynchronizedEvictingQueueTest {
 		SynchronizedEvictingQueue<String> queue = new SynchronizedEvictingQueue<String>(3);
 		Assert.assertEquals(0, queue.size());
 		
-		queue.addAll(Lists.newArrayList("a", "b", "c", "d"));
+		List<String> arrayList = new ArrayList<String>();
+		arrayList.add("a");
+		arrayList.add("b");
+		arrayList.add("c");
+		arrayList.add("d");
+		
+		queue.addAll(arrayList);
 		Assert.assertEquals(3, queue.size());
 		Assert.assertEquals("b", queue.peek());
 	}

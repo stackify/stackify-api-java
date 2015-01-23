@@ -15,7 +15,6 @@
  */
 package com.stackify.api.common.log.direct;
 
-import com.google.common.base.Objects;
 
 /**
  * LogEvent
@@ -232,19 +231,12 @@ public class LogEvent {
 
 	/**
 	 * @see java.lang.Object#toString()
-	 * @return A string representation of the object
 	 */
 	@Override
 	public String toString() {
-	    return Objects.toStringHelper(this)
-	                  .omitNullValues()
-	                  .add("level", level)
-	                  .add("message", message)
-	                  .add("exception", exception)
-	                  .add("timestamp", timestamp)
-	                  .add("className", className)
-	                  .add("methodName", methodName)
-	                  .add("lineNumber", lineNumber)
-	                  .toString();
+		return "LogEvent [level=" + level + ", message=" + message
+				+ ", exception=" + exception + ", timestamp=" + timestamp
+				+ ", className=" + className + ", methodName=" + methodName
+				+ ", lineNumber=" + lineNumber + "]";
 	}
 }

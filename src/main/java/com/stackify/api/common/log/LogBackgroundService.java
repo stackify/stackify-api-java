@@ -18,8 +18,8 @@ package com.stackify.api.common.log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.stackify.api.common.concurrent.BackgroundService;
+import com.stackify.api.common.util.Preconditions;
 
 /**
  * LogSenderService
@@ -61,29 +61,22 @@ public class LogBackgroundService extends BackgroundService {
 	}
 
 	/**
-	 * @see com.google.common.util.concurrent.AbstractScheduledService#scheduler()
+	 * @see com.stackify.api.common.concurrent.BackgroundService#startUp()
 	 */
 	@Override
-	protected Scheduler scheduler() {
-		return scheduler;
+	protected void startUp() {
 	}
 
 	/**
-	 * @see com.google.common.util.concurrent.AbstractScheduledService#shutDown()
+	 * @see com.stackify.api.common.concurrent.BackgroundService#getNextScheduleDelayMilliseconds()
 	 */
 	@Override
-	protected void shutDown() throws Exception {
-		try {
-			collector.flush(sender);
-		} catch (Throwable t) {
-			LOGGER.info("Exception flushing log collector during shut down", t);
-		}
-
-		super.shutDown();
+	protected long getNextScheduleDelayMilliseconds() {
+		return scheduler.getScheduleDelay();
 	}
 
 	/**
-	 * @see com.google.common.util.concurrent.AbstractScheduledService#runOneIteration()
+	 * @see com.stackify.api.common.concurrent.BackgroundService#runOneIteration()
 	 */
 	@Override
 	protected void runOneIteration() {
@@ -93,6 +86,18 @@ public class LogBackgroundService extends BackgroundService {
 		} catch (Throwable t) {
 			LOGGER.info("Exception running Stackify_LogBackgroundService", t);
 			scheduler.update(t);
+		}
+	}
+
+	/**
+	 * @see com.stackify.api.common.concurrent.BackgroundService#shutDown()
+	 */
+	@Override
+	protected void shutDown() {
+		try {
+			collector.flush(sender);
+		} catch (Throwable t) {
+			LOGGER.info("Exception flushing log collector during shut down", t);
 		}
 	}
 }

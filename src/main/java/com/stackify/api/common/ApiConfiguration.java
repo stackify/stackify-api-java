@@ -16,7 +16,6 @@
 package com.stackify.api.common;
 
 import com.stackify.api.EnvironmentDetail;
-import com.google.common.base.Objects;
 
 /**
  * ApiConfiguration
@@ -210,17 +209,11 @@ public class ApiConfiguration {
 
 	/**
 	 * @see java.lang.Object#toString()
-	 * @return A string representation of the object
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
-						.omitNullValues()
-						.add("apiUrl", apiUrl)
-						.add("apiKey", apiKey)
-						.add("application", application)
-						.add("environment", environment)
-						.add("envDetail", envDetail)
-						.toString();
+		return "ApiConfiguration [apiUrl=" + apiUrl + ", apiKey=" + apiKey
+				+ ", application=" + application + ", environment="
+				+ environment + ", envDetail=" + envDetail + "]";
 	}
 }

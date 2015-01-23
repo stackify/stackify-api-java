@@ -19,18 +19,17 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
 
-import com.stackify.api.EnvironmentDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.stackify.api.AppIdentity;
+import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.common.http.HttpClient;
 import com.stackify.api.common.http.HttpException;
+import com.stackify.api.common.util.Preconditions;
 
 /**
  * AppIdentityService
@@ -80,11 +79,11 @@ public class AppIdentityService {
 	 * Retrieves the application identity given the environment details
 	 * @return The application identity
 	 */
-	private Optional<AppIdentity> getAppIdentity(ApiConfiguration apiConfig) {
+	private AppIdentity getAppIdentity(ApiConfiguration apiConfig) {
 		final String applicationName = apiConfig.getApplication();
 
 		if (applicationName == null)
-			return Optional.absent();
+			return null;
 
 		// If there's no record create it.
 		if (!applicationIdentityCache.containsKey(applicationName)) {
@@ -115,7 +114,7 @@ public class AppIdentityService {
 	 * @param applicationName - name of the application
 	 * @return The application identity
 	 */
-	public Optional<AppIdentity> getAppIdentity(final String applicationName) {
+	public AppIdentity getAppIdentity(final String applicationName) {
 		if (isCached(applicationName)) {
 			return applicationIdentityCache.get(applicationName).getAppIdentity();
 
@@ -138,7 +137,7 @@ public class AppIdentityService {
 	 * getAppIdentity
 	 * @return The application identity
 	 */
- 	public Optional<AppIdentity> getAppIdentity() {
+ 	public AppIdentity getAppIdentity() {
 		if (isCached(defaultApiConfig.getApplication()))
 			return applicationIdentityCache.get(defaultApiConfig.getApplication()).getAppIdentity();
 		else
@@ -170,7 +169,7 @@ public class AppIdentityService {
 
 		return
 			applicationIdentityCache.containsKey(applicationName) &&
-			applicationIdentityCache.get(applicationName).getAppIdentity().isPresent();
+			applicationIdentityCache.get(applicationName).getAppIdentity() != null;
 	}
 
 
@@ -190,20 +189,20 @@ public class AppIdentityService {
 	 */
 	private class AppIdentityState {
 
-		private Optional<AppIdentity> mayBeAppIdentity = Optional.absent();
+		private AppIdentity mayBeAppIdentity;
 		private long lastQueryTimeStamp;
 
 		public AppIdentityState() {
 			this.lastQueryTimeStamp = 0;
-			this.mayBeAppIdentity = Optional.absent();
+			this.mayBeAppIdentity = null;
 		}
 
 		public final AppIdentityState updateAppIdentity(final AppIdentity appIdentity) {
-			mayBeAppIdentity = Optional.fromNullable(appIdentity);
+			mayBeAppIdentity = appIdentity;
 			return this;
 		}
 
-		public final Optional<AppIdentity> getAppIdentity() {
+		public final AppIdentity getAppIdentity() {
 			return mayBeAppIdentity;
 		}
 

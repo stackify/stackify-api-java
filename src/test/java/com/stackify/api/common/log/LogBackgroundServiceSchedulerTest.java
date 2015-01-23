@@ -44,7 +44,6 @@ public class LogBackgroundServiceSchedulerTest {
 		
 		Assert.assertEquals(0, scheduler.getLastHttpError());
 		Assert.assertEquals(1000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 	}
 	
 	/**
@@ -58,7 +57,6 @@ public class LogBackgroundServiceSchedulerTest {
 		
 		Assert.assertEquals(0, scheduler.getLastHttpError());
 		Assert.assertEquals(1000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 	}
 	
 	/**
@@ -72,7 +70,6 @@ public class LogBackgroundServiceSchedulerTest {
 		
 		Assert.assertEquals(0, scheduler.getLastHttpError());
 		Assert.assertEquals(1250, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 	}
 	
 	/**
@@ -89,7 +86,6 @@ public class LogBackgroundServiceSchedulerTest {
 		Assert.assertTrue(beforeUpdate <= scheduler.getLastHttpError());
 		Assert.assertTrue(scheduler.getLastHttpError() <= afterUpdate);
 		Assert.assertEquals(300000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 	}
 	
 	/**
@@ -106,7 +102,6 @@ public class LogBackgroundServiceSchedulerTest {
 		Assert.assertTrue(beforeUpdate <= scheduler.getLastHttpError());
 		Assert.assertTrue(scheduler.getLastHttpError() <= afterUpdate);
 		Assert.assertEquals(1000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 	}
 	
 	/**
@@ -123,7 +118,6 @@ public class LogBackgroundServiceSchedulerTest {
 		Assert.assertTrue(beforeFirstUpdate <= scheduler.getLastHttpError());
 		Assert.assertTrue(scheduler.getLastHttpError() <= afterFirstUpdate);
 		Assert.assertEquals(1000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 
 		PowerMockito.mockStatic(System.class);
 		PowerMockito.when(System.currentTimeMillis()).thenReturn(scheduler.getLastHttpError() + 15000);
@@ -133,7 +127,6 @@ public class LogBackgroundServiceSchedulerTest {
 		Assert.assertTrue(beforeFirstUpdate <= scheduler.getLastHttpError());
 		Assert.assertTrue(scheduler.getLastHttpError() <= afterFirstUpdate);
 		Assert.assertEquals(15000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 	}
 
 	/**
@@ -150,13 +143,11 @@ public class LogBackgroundServiceSchedulerTest {
 		Assert.assertTrue(beforeUpdate <= scheduler.getLastHttpError());
 		Assert.assertTrue(scheduler.getLastHttpError() <= afterUpdate);
 		Assert.assertEquals(1000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 		
 		scheduler.update(10);
 		
 		Assert.assertEquals(0, scheduler.getLastHttpError());
 		Assert.assertEquals(1000, scheduler.getScheduleDelay());
-		Assert.assertNotNull(scheduler.getNextSchedule());
 	}
 	
 	/**

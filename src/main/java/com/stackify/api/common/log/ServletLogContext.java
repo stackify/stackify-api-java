@@ -19,7 +19,6 @@ import org.slf4j.helpers.BasicMDCAdapter;
 import org.slf4j.spi.MDCAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.stackify.api.WebRequestDetail;
 
 /**
@@ -56,15 +55,15 @@ public class ServletLogContext {
 	/**
 	 * @return The transaction id from the logging context
 	 */
-	public static Optional<String> getTransactionId() {
+	public static String getTransactionId() {
 		
 		String value = MDC.get(TRANSACTION_ID);
 		
 		if ((value != null) && (0 < value.length())) {
-			return Optional.of(value);
+			return value;
 		}
 		
-		return Optional.absent();
+		return null;
 	}
 	
 	/**
@@ -80,15 +79,15 @@ public class ServletLogContext {
 	/**
 	 * @return The user from the logging context
 	 */
-	public static Optional<String> getUser() {
+	public static String getUser() {
 		
 		String value = MDC.get(USER);
 		
 		if ((value != null) && (0 < value.length())) {
-			return Optional.of(value);
+			return value;
 		}
 		
-		return Optional.absent();
+		return null;
 	}
 	
 	/**
@@ -104,20 +103,19 @@ public class ServletLogContext {
 	/**
 	 * @return The web request from the logging context
 	 */
-	public static Optional<WebRequestDetail> getWebRequest() {
+	public static WebRequestDetail getWebRequest() {
 		
 		String value = MDC.get(WEB_REQUEST);
 		
 		if ((value != null) && (0 < value.length())) {
 			try {
-				WebRequestDetail webRequest = JSON.readValue(value, WebRequestDetail.class);
-				return Optional.fromNullable(webRequest);
+				return JSON.readValue(value, WebRequestDetail.class);
 			} catch (Throwable t) {
 				// do nothing
 			}
 		}
 		
-		return Optional.absent();
+		return null;
 	}
 	
 	/**

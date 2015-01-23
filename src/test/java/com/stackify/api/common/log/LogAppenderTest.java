@@ -22,9 +22,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.google.common.base.Optional;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.Service;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
@@ -52,7 +49,6 @@ public class LogAppenderTest {
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
 
 		LogBackgroundService background = PowerMockito.mock(LogBackgroundService.class);
-		Mockito.when(background.start()).thenReturn(Mockito.mock(ListenableFuture.class));
 		PowerMockito.whenNew(LogBackgroundService.class).withAnyArguments().thenReturn(background);
 		
 		ApiConfiguration config = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").envDetail(Mockito.mock(EnvironmentDetail.class)).build();
@@ -75,8 +71,6 @@ public class LogAppenderTest {
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
 
 		LogBackgroundService background = PowerMockito.mock(LogBackgroundService.class);
-		Mockito.when(background.start()).thenReturn(Mockito.mock(ListenableFuture.class));
-		Mockito.when(background.stop()).thenReturn(Mockito.mock(ListenableFuture.class));
 		PowerMockito.whenNew(LogBackgroundService.class).withAnyArguments().thenReturn(background);
 		
 		ApiConfiguration config = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").envDetail(Mockito.mock(EnvironmentDetail.class)).build();
@@ -98,7 +92,7 @@ public class LogAppenderTest {
 		Throwable t = new NullPointerException();
 		
 		EventAdapter<String> adapter = Mockito.mock(EventAdapter.class);
-		Mockito.when(adapter.getThrowable(event)).thenReturn(Optional.of(t));
+		Mockito.when(adapter.getThrowable(event)).thenReturn(t);
 		Mockito.when(adapter.getStackifyError(event, t)).thenReturn(Mockito.mock(StackifyError.class));
 		
 		ErrorGovernor governor = Mockito.mock(ErrorGovernor.class);
@@ -111,8 +105,6 @@ public class LogAppenderTest {
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
 
 		LogBackgroundService background = PowerMockito.mock(LogBackgroundService.class);
-		Mockito.when(background.start()).thenReturn(Mockito.mock(ListenableFuture.class));
-		Mockito.when(background.stop()).thenReturn(Mockito.mock(ListenableFuture.class));
 		PowerMockito.whenNew(LogBackgroundService.class).withAnyArguments().thenReturn(background);
 		
 		ApiConfiguration config = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").envDetail(Mockito.mock(EnvironmentDetail.class)).build();

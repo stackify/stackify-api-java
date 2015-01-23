@@ -15,7 +15,6 @@
  */
 package com.stackify.api.common.log;
 
-import com.google.common.base.Optional;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
 
@@ -30,7 +29,7 @@ public interface EventAdapter<T> {
 	 * @param event The logging event
 	 * @return The Throwable (optional)
 	 */
-	Optional<Throwable> getThrowable(final T event);
+	Throwable getThrowable(final T event);
 
 	/**
 	 * Builds a StackifyError from the logging event
@@ -46,7 +45,7 @@ public interface EventAdapter<T> {
 	 * @param error The exception (optional)
 	 * @return The LogMsg
 	 */
-	LogMsg getLogMsg(final T event, final Optional<StackifyError> error);	
+	LogMsg getLogMsg(final T event, final StackifyError error);	
 	
 	/**
 	 * Returns true if the event was logged at an error level

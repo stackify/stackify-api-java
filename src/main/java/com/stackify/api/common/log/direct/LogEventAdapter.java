@@ -17,9 +17,6 @@ package com.stackify.api.common.log.direct;
 
 import java.util.Date;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
@@ -27,6 +24,8 @@ import com.stackify.api.WebRequestDetail;
 import com.stackify.api.common.lang.Throwables;
 import com.stackify.api.common.log.EventAdapter;
 import com.stackify.api.common.log.ServletLogContext;
+import com.stackify.api.common.util.Maps;
+import com.stackify.api.common.util.Preconditions;
 
 /**
  * LogEvent
@@ -52,8 +51,8 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 	 * @see com.stackify.api.common.log.EventAdapter#getThrowable(java.lang.Object)
 	 */
 	@Override
-	public Optional<Throwable> getThrowable(final LogEvent event) {
-		return Optional.fromNullable(event.getException());
+	public Throwable getThrowable(final LogEvent event) {
+		return event.getException();
 	}
 
 	/**
@@ -71,16 +70,16 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 			builder.error(Throwables.toErrorItem(event.getMessage(), event.getClassName(), event.getMethodName(), event.getLineNumber()));
 		}
 
-		Optional<String> user = ServletLogContext.getUser();
+		String user = ServletLogContext.getUser();
 		
-		if (user.isPresent()) {
-			builder.userName(user.get());
+		if (user != null) {
+			builder.userName(user);
 		}
 		
-		Optional<WebRequestDetail> webRequest = ServletLogContext.getWebRequest();
+		WebRequestDetail webRequest = ServletLogContext.getWebRequest();
 		
-		if (webRequest.isPresent()) {
-			builder.webRequestDetail(webRequest.get());
+		if (webRequest != null) {
+			builder.webRequestDetail(webRequest);
 		}
 
 		builder.serverVariables(Maps.fromProperties(System.getProperties()));
@@ -92,20 +91,20 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 	 * @see com.stackify.api.common.log.EventAdapter#getLogMsg(java.lang.Object, com.google.common.base.Optional)
 	 */
 	@Override
-	public LogMsg getLogMsg(final LogEvent event, final Optional<StackifyError> error) {
+	public LogMsg getLogMsg(final LogEvent event, final StackifyError error) {
 		LogMsg.Builder builder = LogMsg.newBuilder();
 		builder.msg(event.getMessage());
-		builder.ex(error.orNull());
+		builder.ex(error);
 		builder.epochMs(event.getTimestamp());
 		
 		if (event.getLevel() != null) {
 			builder.level(event.getLevel().toLowerCase());
 		}
 		
-		Optional<String> transactionId = ServletLogContext.getTransactionId();
+		String transactionId = ServletLogContext.getTransactionId();
 		
-		if (transactionId.isPresent()) {
-			builder.transId(transactionId.get());
+		if (transactionId != null) {
+			builder.transId(transactionId);
 		}
 						
 		return builder.build();

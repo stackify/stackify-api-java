@@ -17,17 +17,14 @@ package com.stackify.api.common.log;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.error.ErrorGovernor;
+import com.stackify.api.common.util.Preconditions;
 
 /**
  * LogAppender
@@ -101,12 +98,7 @@ public class LogAppender<T> implements Closeable {
 		// startup the background service
 
 		this.backgroundService = new LogBackgroundService(collector, sender);
-
-		try {
-			backgroundService.start().get(5, TimeUnit.SECONDS);
-		} catch (Exception e) {
-			Throwables.propagate(e);
-		}
+		this.backgroundService.start();
 	}
 
 	/**
@@ -115,11 +107,7 @@ public class LogAppender<T> implements Closeable {
 	@Override
 	public void close() throws IOException {
 		if (backgroundService != null) {
-			try {
-				backgroundService.stop().get(5, TimeUnit.SECONDS);
-			} catch (Exception e) {
-				Throwables.propagate(e);
-			}
+			backgroundService.stop();
 		}
 	}
 
@@ -141,15 +129,15 @@ public class LogAppender<T> implements Closeable {
 
 		// build the log message and queue it to be sent to Stackify
 
-		Optional<Throwable> exception = eventAdapter.getThrowable(event);
+		Throwable exception = eventAdapter.getThrowable(event);
 
-		Optional<StackifyError> error = Optional.absent();
+		StackifyError error = null;
 
-		if ((exception.isPresent()) || (eventAdapter.isErrorLevel(event))) {
-			StackifyError e = eventAdapter.getStackifyError(event, exception.orNull());
+		if ((exception != null) || (eventAdapter.isErrorLevel(event))) {
+			StackifyError e = eventAdapter.getStackifyError(event, exception);
 
 			if (errorGovernor.errorShouldBeSent(e)) {
-				error = Optional.of(e);
+				error = e;
 			}
 		}
 

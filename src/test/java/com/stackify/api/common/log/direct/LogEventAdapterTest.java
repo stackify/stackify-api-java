@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.google.common.base.Optional;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.ErrorItem;
 import com.stackify.api.LogMsg;
@@ -41,13 +40,13 @@ public class LogEventAdapterTest {
 		
 		Throwable exception = new NullPointerException();		
 		LogEvent eventWithException = LogEvent.newBuilder().exception(exception).build();
-		Optional<Throwable> present = adapter.getThrowable(eventWithException);
-		Assert.assertTrue(present.isPresent());
-		Assert.assertEquals(exception, present.get());
+		Throwable present = adapter.getThrowable(eventWithException);
+		Assert.assertNotNull(present);
+		Assert.assertEquals(exception, present);
 		
 		LogEvent eventWithoutException = LogEvent.newBuilder().build();
-		Optional<Throwable> absent = adapter.getThrowable(eventWithoutException);
-		Assert.assertFalse(absent.isPresent());
+		Throwable absent = adapter.getThrowable(eventWithoutException);
+		Assert.assertNull(absent);
 	}
 	
 	/**
@@ -87,7 +86,7 @@ public class LogEventAdapterTest {
 
 		StackifyError error = Mockito.mock(StackifyError.class);
 		
-		LogMsg logMsg = adapter.getLogMsg(event, Optional.of(error));
+		LogMsg logMsg = adapter.getLogMsg(event, error);
 		Assert.assertEquals(message, logMsg.getMsg());
 		Assert.assertEquals(error, logMsg.getEx());
 		Assert.assertEquals(event.getTimestamp(), logMsg.getEpochMs().longValue());
@@ -107,7 +106,7 @@ public class LogEventAdapterTest {
 
 		StackifyError error = Mockito.mock(StackifyError.class);
 		
-		LogMsg logMsg = adapter.getLogMsg(event, Optional.of(error));
+		LogMsg logMsg = adapter.getLogMsg(event, error);
 		Assert.assertEquals(message, logMsg.getMsg());
 		Assert.assertEquals(error, logMsg.getEx());
 		Assert.assertEquals(event.getTimestamp(), logMsg.getEpochMs().longValue());
