@@ -18,6 +18,7 @@ package com.stackify.api.common.http;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 
 import org.junit.Assert;
@@ -50,7 +51,7 @@ public class HttpClientTest {
 		
 		HttpURLConnection connection = PowerMockito.mock(HttpURLConnection.class);
 		
-		PowerMockito.when(url.openConnection()).thenReturn(connection);
+		PowerMockito.when(url.openConnection(Proxy.NO_PROXY)).thenReturn(connection);
 		
 		ByteArrayOutputStream postBody = new ByteArrayOutputStream();
 		PowerMockito.when(connection.getOutputStream()).thenReturn(postBody);
@@ -79,7 +80,7 @@ public class HttpClientTest {
 		
 		HttpURLConnection connection = PowerMockito.mock(HttpURLConnection.class);
 		
-		PowerMockito.when(url.openConnection()).thenReturn(connection);
+		PowerMockito.when(url.openConnection(Proxy.NO_PROXY)).thenReturn(connection);
 		
 		ByteArrayOutputStream postBody = new ByteArrayOutputStream();
 		PowerMockito.when(connection.getOutputStream()).thenReturn(postBody);
@@ -105,7 +106,7 @@ public class HttpClientTest {
 		
 		HttpURLConnection connection = PowerMockito.mock(HttpURLConnection.class);
 		
-		PowerMockito.when(url.openConnection()).thenReturn(connection);
+		PowerMockito.when(url.openConnection(Proxy.NO_PROXY)).thenReturn(connection);
 		
 		ByteArrayOutputStream postBody = new ByteArrayOutputStream();
 		PowerMockito.when(connection.getOutputStream()).thenReturn(postBody);
