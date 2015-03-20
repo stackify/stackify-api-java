@@ -47,7 +47,7 @@ public class AppIdentityServiceTest {
 			EnvironmentDetail.newBuilder().deviceName("device").appName("app").build();
 
 		final AppIdentity appIdentity =
-			AppIdentity.newBuilder().deviceId(123).appNameId("456").appName("app").build();
+			AppIdentity.newBuilder().deviceId(123).deviceAppId(789).appNameId("456").appName("app").build();
 
 		final ObjectMapper objectMapper = new ObjectMapper();
 

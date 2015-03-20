@@ -61,6 +61,11 @@ public class AppIdentityService {
 	 * Jackson object mapper
 	 */
 	private final ObjectMapper objectMapper;
+	
+	/**
+	 * True if deviceAppId is required in the response
+	 */
+	private final boolean deviceAppIdRequired;
 
 	/**
 	 * Constructor
@@ -73,6 +78,22 @@ public class AppIdentityService {
 
 		this.defaultApiConfig = apiConfig;
 		this.objectMapper = objectMapper;
+		this.deviceAppIdRequired = false;
+	}
+	
+	/**
+	 * Constructor
+	 * @param apiConfig The API configuration
+	 * @param objectMapper Jackson object mapper
+	 * @param deviceAppIdRequired True if deviceAppId is required in the response
+	 */
+	public AppIdentityService(final ApiConfiguration apiConfig, final ObjectMapper objectMapper, final boolean deviceAppIdRequired) {
+		Preconditions.checkNotNull(apiConfig);
+		Preconditions.checkNotNull(objectMapper);
+
+		this.defaultApiConfig = apiConfig;
+		this.objectMapper = objectMapper;
+		this.deviceAppIdRequired = deviceAppIdRequired;
 	}
 
 	/**
@@ -154,13 +175,34 @@ public class AppIdentityService {
 		// convert to json bytes
 		byte[] jsonBytes = objectMapper.writer().writeValueAsBytes(apiConfig.getEnvDetail());
 
+		if (LOGGER.isDebugEnabled())
+		{
+			LOGGER.debug("IdentifyApp Request: {}", new String(jsonBytes, "UTF-8"));
+		}
+		
 		// post to stackify
 		final HttpClient httpClient = new HttpClient(apiConfig);
 		final String responseString = httpClient.post("/Metrics/IdentifyApp", jsonBytes);
 
+		LOGGER.debug("IdentifyApp Response: {}", responseString);
+		
 		// deserialize the response and return the app identity
 		ObjectReader jsonReader = objectMapper.reader(new TypeReference<AppIdentity>(){});
-		return jsonReader.readValue(responseString);
+		AppIdentity identity = jsonReader.readValue(responseString);
+		
+		// make sure it has a valid DeviceAppID before accepting it
+		
+		if (deviceAppIdRequired)
+		{
+			if (identity.getDeviceAppId() == null)
+			{
+				throw new NullPointerException("DeviceAppId is null");
+			}
+		}
+		
+		// done
+		
+		return identity;
 	}
 
 
