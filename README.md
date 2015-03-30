@@ -1,5 +1,6 @@
 # stackify-api-java
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.stackify/stackify-api-java.svg)](http://mvnrepository.com/artifact/com.stackify/stackify-api-java)
 [![Build Status](https://travis-ci.org/stackify/stackify-api-java.png)](https://travis-ci.org/stackify/stackify-api-java)
 [![Coverage Status](https://coveralls.io/repos/stackify/stackify-api-java/badge.png?branch=master)](https://coveralls.io/r/stackify/stackify-api-java?branch=master)
 
