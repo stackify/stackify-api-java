@@ -22,6 +22,17 @@ Logback Appender:
 
 https://github.com/stackify/stackify-log-logback
 
+## Installation
+
+Add it as a maven dependency:
+```xml
+<dependency>
+    <groupId>com.stackify</groupId>
+    <artifactId>stackify-api-java</artifactId>
+    <version>INSERT_LATEST_MAVEN_CENTRAL_VERSION</version>
+</dependency>
+```
+
 ## Configuration and Usage for Direct Logger
 
 You need a stackify-api.properties file on your classpath that defines the configuration required for the Log API:
@@ -51,17 +62,6 @@ Logger.queueException("error", "Test message", e);
 Be sure to shutdown the Direct Logger to flush this appender of any messages and shutdown the background thread:
 ```java
 LogManager.shutdown();
-```
-
-## Installation
-
-Add it as a maven dependency:
-```xml
-<dependency>
-    <groupId>com.stackify</groupId>
-    <artifactId>stackify-api-java</artifactId>
-    <version>2.1.2</version>
-</dependency>
 ```
 
 ## License
