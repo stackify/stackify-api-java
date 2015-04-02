@@ -61,5 +61,17 @@ public class StackifyErrorTest {
 		Assert.assertEquals(serverVariables, stackifyError.getServerVariables());
 		Assert.assertEquals(customerName, stackifyError.getCustomerName());
 		Assert.assertEquals(userName, stackifyError.getUserName());
+		
+		StackifyError stackifyErrorCopy = stackifyError.toBuilder().build();
+		
+		Assert.assertNotNull(stackifyErrorCopy);
+
+		Assert.assertEquals(environment, stackifyErrorCopy.getEnvironmentDetail());
+		Assert.assertEquals(timeStamp, stackifyErrorCopy.getOccurredEpochMillis());
+		Assert.assertEquals(errorDetail, stackifyErrorCopy.getError());
+		Assert.assertEquals(webRequestDetail, stackifyErrorCopy.getWebRequestDetail());
+		Assert.assertEquals(serverVariables, stackifyErrorCopy.getServerVariables());
+		Assert.assertEquals(customerName, stackifyErrorCopy.getCustomerName());
+		Assert.assertEquals(userName, stackifyErrorCopy.getUserName());		
 	}
 }

@@ -45,5 +45,13 @@ public class TraceFrameTest {
 		Assert.assertEquals(fileName, stackFrame.getCodeFileName());
 		Assert.assertEquals(lineNumber, stackFrame.getLineNum());
 		Assert.assertEquals(methodName, stackFrame.getMethod());
+		
+		TraceFrame stackFrameCopy = stackFrame.toBuilder().build();
+		
+		Assert.assertNotNull(stackFrameCopy);
+
+		Assert.assertEquals(fileName, stackFrameCopy.getCodeFileName());
+		Assert.assertEquals(lineNumber, stackFrameCopy.getLineNum());
+		Assert.assertEquals(methodName, stackFrameCopy.getMethod());
 	}
 }

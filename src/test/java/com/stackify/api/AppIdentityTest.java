@@ -51,5 +51,18 @@ public class AppIdentityTest {
 		Assert.assertEquals(deviceAlias, appIdentity.getDeviceAlias());
 		
 		Assert.assertNotNull(appIdentity.toString());
+		
+		AppIdentity appIdentityCopy = appIdentity.toBuilder().build();
+		
+		Assert.assertNotNull(appIdentityCopy);
+		
+		Assert.assertEquals(deviceId, appIdentityCopy.getDeviceId());
+		Assert.assertEquals(deviceAppId, appIdentityCopy.getDeviceAppId());
+		Assert.assertEquals(appNameId, appIdentityCopy.getAppNameId());
+		Assert.assertEquals(envId, appIdentityCopy.getEnvId());
+		Assert.assertEquals(env, appIdentityCopy.getEnv());
+		Assert.assertEquals(appName, appIdentityCopy.getAppName());
+		Assert.assertEquals(appEnvId, appIdentityCopy.getAppEnvId());
+		Assert.assertEquals(deviceAlias, appIdentityCopy.getDeviceAlias());
 	}
 }

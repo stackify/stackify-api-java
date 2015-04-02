@@ -51,5 +51,15 @@ public class EnvironmentDetailTest {
 		Assert.assertEquals(appLocation, environment.getAppLocation());
 		Assert.assertEquals(configuredAppName, environment.getConfiguredAppName());
 		Assert.assertEquals(configuredEnvironmentName, environment.getConfiguredEnvironmentName());
+		
+		EnvironmentDetail environmentCopy = environment.toBuilder().build();
+		
+		Assert.assertNotNull(environmentCopy);
+
+		Assert.assertEquals(deviceName, environmentCopy.getDeviceName());
+		Assert.assertEquals(appName, environmentCopy.getAppName());
+		Assert.assertEquals(appLocation, environmentCopy.getAppLocation());
+		Assert.assertEquals(configuredAppName, environmentCopy.getConfiguredAppName());
+		Assert.assertEquals(configuredEnvironmentName, environmentCopy.getConfiguredEnvironmentName());
 	}
 }

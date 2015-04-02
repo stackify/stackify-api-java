@@ -75,5 +75,22 @@ public class LogMsgGroupTest {
 		Assert.assertEquals(logger, logMsgGroup.getLogger());
 		Assert.assertEquals(platform, logMsgGroup.getPlatform());
 		Assert.assertEquals(msgs, logMsgGroup.getMsgs());
+		
+		LogMsgGroup logMsgGroupCopy = logMsgGroup.toBuilder().build();
+		
+		Assert.assertNotNull(logMsgGroupCopy);
+
+		Assert.assertEquals(cdId, logMsgGroupCopy.getCdId());
+		Assert.assertEquals(cdAppId, logMsgGroupCopy.getCdAppId());
+		Assert.assertEquals(appNameId, logMsgGroupCopy.getAppNameId());
+		Assert.assertEquals(appEnvId, logMsgGroupCopy.getAppEnvId());
+		Assert.assertEquals(envId, logMsgGroupCopy.getEnvId());
+		Assert.assertEquals(env, logMsgGroupCopy.getEnv());
+		Assert.assertEquals(serverName, logMsgGroupCopy.getServerName());
+		Assert.assertEquals(appName, logMsgGroupCopy.getAppName());
+		Assert.assertEquals(appLoc, logMsgGroupCopy.getAppLoc());
+		Assert.assertEquals(logger, logMsgGroupCopy.getLogger());
+		Assert.assertEquals(platform, logMsgGroupCopy.getPlatform());
+		Assert.assertEquals(msgs, logMsgGroupCopy.getMsgs());
 	}
 }

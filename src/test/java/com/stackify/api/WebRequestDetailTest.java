@@ -21,8 +21,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.stackify.api.WebRequestDetail;
-
 /**
  * WebRequestDetail JUnit Test
  *
@@ -86,5 +84,25 @@ public class WebRequestDetailTest {
 		Assert.assertEquals(mvcAction, webRequest.getMvcAction());
 		Assert.assertEquals(mvcController, webRequest.getMvcController());
 		Assert.assertEquals(mvcArea, webRequest.getMvcArea());
+		
+		WebRequestDetail webRequestCopy = webRequest.toBuilder().build();
+		
+		Assert.assertNotNull(webRequestCopy);
+
+		Assert.assertEquals(userIpAddress, webRequestCopy.getUserIpAddress());
+		Assert.assertEquals(httpMethod, webRequestCopy.getHttpMethod());
+		Assert.assertEquals(requestProtocol, webRequestCopy.getRequestProtocol());
+		Assert.assertEquals(requestUrl, webRequestCopy.getRequestUrl());
+		Assert.assertEquals(requestUrlRoot, webRequestCopy.getRequestUrlRoot());
+		Assert.assertEquals(referralUrl, webRequestCopy.getReferralUrl());
+		Assert.assertEquals(headers, webRequestCopy.getHeaders());
+		Assert.assertEquals(cookies, webRequestCopy.getCookies());
+		Assert.assertEquals(queryString, webRequestCopy.getQueryString());
+		Assert.assertEquals(postData, webRequestCopy.getPostData());
+		Assert.assertEquals(sessionData, webRequestCopy.getSessionData());
+		Assert.assertEquals(postDataRaw, webRequestCopy.getPostDataRaw());
+		Assert.assertEquals(mvcAction, webRequestCopy.getMvcAction());
+		Assert.assertEquals(mvcController, webRequestCopy.getMvcController());
+		Assert.assertEquals(mvcArea, webRequestCopy.getMvcArea());
 	}
 }

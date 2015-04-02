@@ -23,9 +23,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.stackify.api.ErrorItem;
-import com.stackify.api.TraceFrame;
-
 /**
  * ErrorItem JUnit Test
  *
@@ -68,5 +65,17 @@ public class ErrorItemTest {
 		Assert.assertEquals(cause, errorDetail.getInnerError());
 		Assert.assertEquals(errorTypeCode, errorDetail.getErrorTypeCode());
 		Assert.assertEquals(data, errorDetail.getData());
+		
+		ErrorItem errorDetailCopy = errorDetail.toBuilder().build();
+		
+		Assert.assertNotNull(errorDetailCopy);
+
+		Assert.assertEquals(message, errorDetailCopy.getMessage());
+		Assert.assertEquals(className, errorDetailCopy.getErrorType());
+		Assert.assertEquals(methodName, errorDetailCopy.getSourceMethod());
+		Assert.assertEquals(stackTrace, errorDetailCopy.getStackTrace());
+		Assert.assertEquals(cause, errorDetailCopy.getInnerError());
+		Assert.assertEquals(errorTypeCode, errorDetailCopy.getErrorTypeCode());
+		Assert.assertEquals(data, errorDetailCopy.getData());
 	}
 }

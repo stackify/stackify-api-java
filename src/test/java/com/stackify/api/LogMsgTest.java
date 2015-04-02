@@ -64,5 +64,19 @@ public class LogMsgTest {
 		Assert.assertEquals(transId, logMsg.getTransId());
 		Assert.assertEquals(srcMethod, logMsg.getSrcMethod());
 		Assert.assertEquals(srcLine, logMsg.getSrcLine());
+		
+		LogMsg logMsgCopy = logMsg.toBuilder().build();
+		
+		Assert.assertNotNull(logMsgCopy);
+
+		Assert.assertEquals(msg, logMsgCopy.getMsg());
+		Assert.assertEquals(data, logMsgCopy.getData());
+		Assert.assertEquals(ex, logMsgCopy.getEx());
+		Assert.assertEquals(th, logMsgCopy.getTh());
+		Assert.assertEquals(epochMs, logMsgCopy.getEpochMs());
+		Assert.assertEquals(level, logMsgCopy.getLevel());
+		Assert.assertEquals(transId, logMsgCopy.getTransId());
+		Assert.assertEquals(srcMethod, logMsgCopy.getSrcMethod());
+		Assert.assertEquals(srcLine, logMsgCopy.getSrcLine());		
 	}
 }
