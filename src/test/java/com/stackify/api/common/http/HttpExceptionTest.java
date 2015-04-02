@@ -34,4 +34,16 @@ public class HttpExceptionTest {
 		HttpException e = new HttpException(HttpURLConnection.HTTP_BAD_REQUEST);
 		Assert.assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, e.getStatusCode());
 	}
+	
+	/**
+	 * testIsClientError
+	 */
+	@Test
+	public void testIsClientError() {
+		HttpException badRequest = new HttpException(HttpURLConnection.HTTP_BAD_REQUEST);
+		Assert.assertTrue(badRequest.isClientError());
+		
+		HttpException internalError = new HttpException(HttpURLConnection.HTTP_INTERNAL_ERROR);
+		Assert.assertFalse(internalError.isClientError());
+	}
 }

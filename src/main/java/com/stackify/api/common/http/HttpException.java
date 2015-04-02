@@ -15,6 +15,8 @@
  */
 package com.stackify.api.common.http;
 
+import java.net.HttpURLConnection;
+
 /**
  * HttpException
  * @author Eric Martin
@@ -44,5 +46,12 @@ public class HttpException extends Exception {
 	 */
 	public int getStatusCode() {
 		return statusCode;
+	}
+	
+	/**
+	 * @return True if 4xx status code
+	 */
+	public boolean isClientError() {
+		return (HttpURLConnection.HTTP_BAD_REQUEST <= statusCode) && (statusCode < HttpURLConnection.HTTP_INTERNAL_ERROR);
 	}
 }
