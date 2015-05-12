@@ -165,14 +165,16 @@ public class HttpClient {
 	/**
 	 * Reads all remaining contents from the stream and closes it
 	 * @param stream The stream
-	 * @return THe contents of the stream
+	 * @return The contents of the stream
 	 * @throws IOException
 	 */
 	private String readAndClose(final InputStream stream) throws IOException {
-		Preconditions.checkNotNull(stream);
+		String contents = null;
 		
-		String contents = CharStreams.toString(new InputStreamReader(new BufferedInputStream(stream), "UTF-8"));
-		stream.close();
+		if (stream != null) {
+			contents = CharStreams.toString(new InputStreamReader(new BufferedInputStream(stream), "UTF-8"));
+			stream.close();
+		}
 		
 		return contents;
 	}
