@@ -65,6 +65,8 @@ public class LogMsgTest {
 		Assert.assertEquals(srcMethod, logMsg.getSrcMethod());
 		Assert.assertEquals(srcLine, logMsg.getSrcLine());
 		
+		Assert.assertNotNull(logMsg.getId());
+		
 		LogMsg logMsgCopy = logMsg.toBuilder().build();
 		
 		Assert.assertNotNull(logMsgCopy);

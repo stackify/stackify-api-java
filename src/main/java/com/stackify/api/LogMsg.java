@@ -15,6 +15,8 @@
  */
 package com.stackify.api;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -83,6 +85,12 @@ public class LogMsg {
 	private final Integer srcLine;
 
 	/**
+	 * The log message id
+	 */
+	@JsonProperty("id")
+	private final String id;
+
+	/**
 	 * @return the msg
 	 */
 	public String getMsg() {
@@ -146,6 +154,13 @@ public class LogMsg {
 	}
 
 	/**
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
 	 * @return An instance of Builder, based on current class state
 	 */
 	public Builder toBuilder() {
@@ -174,6 +189,7 @@ public class LogMsg {
 		this.transId = builder.transId;
 		this.srcMethod = builder.srcMethod;
 		this.srcLine = builder.srcLine;
+		this.id = UUID.randomUUID().toString();
 	}
 
 	/**
