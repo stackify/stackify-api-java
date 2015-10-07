@@ -130,4 +130,16 @@ public class LogEventAdapterTest {
 		LogEvent noLevel = LogEvent.newBuilder().message("Message").build();
 		Assert.assertFalse(adapter.isErrorLevel(noLevel));
 	}
+	
+	/**
+	 * testGetClassName
+	 */
+	@Test
+	public void testGetClassName() {
+		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+		LogEventAdapter adapter = new LogEventAdapter(envDetail);
+
+		LogEvent isStackify = LogEvent.newBuilder().className("com.stackify.api.common.log.LogBackgroundService").build();
+		Assert.assertEquals("com.stackify.api.common.log.LogBackgroundService", adapter.getClassName(isStackify));
+	}
 }

@@ -127,6 +127,16 @@ public class LogAppender<T> implements Closeable {
 			return;
 		}
 
+		// skip internal logging
+		
+		String className = eventAdapter.getClassName(event);
+		
+		if (className != null) {
+			if (className.startsWith("com.stackify.api.")) {
+				return;
+			}
+		}
+		
 		// build the log message and queue it to be sent to Stackify
 
 		Throwable exception = eventAdapter.getThrowable(event);
