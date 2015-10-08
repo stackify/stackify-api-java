@@ -141,4 +141,40 @@ public class LogAppenderTest {
 		
 		Mockito.verifyZeroInteractions(collector);	
 	}
+	
+	/**
+	 * testAppendInternalEvent
+	 * @throws Exception 
+	 */
+	@Test
+	public void testAppendInternalEvent() throws Exception {
+		String event = "log event";
+		
+		EventAdapter<String> adapter = Mockito.mock(EventAdapter.class);
+		Mockito.when(adapter.getClassName(event)).thenReturn("com.stackify.api.common.log.LogBackgroundService");
+		
+		ErrorGovernor governor = Mockito.mock(ErrorGovernor.class);
+		Mockito.when(governor.errorShouldBeSent(Mockito.any(StackifyError.class))).thenReturn(true);
+		PowerMockito.whenNew(ErrorGovernor.class).withAnyArguments().thenReturn(governor);
+		
+		LogAppender<String> appender = new LogAppender<String>("logger", adapter);
+		
+		LogCollector collector = Mockito.mock(LogCollector.class);
+		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
+
+		LogBackgroundService background = PowerMockito.mock(LogBackgroundService.class);
+		PowerMockito.whenNew(LogBackgroundService.class).withAnyArguments().thenReturn(background);
+		
+		ApiConfiguration config = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").envDetail(Mockito.mock(EnvironmentDetail.class)).build();
+		
+		appender.activate(config);
+
+		Mockito.when(background.isRunning()).thenReturn(true);
+
+		appender.append(event);
+		
+		appender.close();
+		
+		Mockito.verifyZeroInteractions(collector);	
+	}
 }

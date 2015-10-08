@@ -121,4 +121,12 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		
 		return false;
 	}
+
+	/**
+	 * @see com.stackify.api.common.log.EventAdapter#getClassName(java.lang.Object)
+	 */
+	@Override
+	public String getClassName(final LogEvent event) {
+		return event.getClassName();
+	}
 }

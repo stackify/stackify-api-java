@@ -53,4 +53,11 @@ public interface EventAdapter<T> {
 	 * @return True if the event was logged at error level
 	 */
 	boolean isErrorLevel(final T event);
+	
+	/**
+	 * Returns the class name from the log event
+	 * @param event The logging event
+	 * @return The class name from the log event
+	 */
+	String getClassName(final T event);
 }
