@@ -3,7 +3,7 @@
 
 	<groupId>com.stackify</groupId>
 	<artifactId>stackify-api-java</artifactId>
-	<version>2.1.5-SNAPSHOT</version>
+	<version>2.1.5</version>
 
 	<name>Stackify API for Java</name>
 	<description>Stackify API for Java</description>
