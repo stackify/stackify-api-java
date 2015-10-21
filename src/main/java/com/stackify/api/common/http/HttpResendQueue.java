@@ -37,16 +37,21 @@ public class HttpResendQueue {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpResendQueue.class);
 
 	/**
+	 * Try posting message 3 times before skipping it
+	 */
+	private static final int MAX_POST_ATTEMPTS = 3;
+	
+	/**
 	 * The queue of requests to be retransmitted
 	 */
-	private final Queue<byte[]> resendQueue; 
+	private final Queue<HttpResendQueueItem> resendQueue; 
 
 	/**
 	 * Constructor
 	 * @param maxSize Maximum size of the queue
 	 */
 	public HttpResendQueue(final int maxSize) {
-		this.resendQueue = new SynchronizedEvictingQueue<byte[]>(maxSize); 
+		this.resendQueue = new SynchronizedEvictingQueue<HttpResendQueueItem>(maxSize); 
 	}
 	
 	/**
@@ -62,7 +67,7 @@ public class HttpResendQueue {
 	 * @param e IOException
 	 */
 	public void offer(final byte[] request, final IOException e) {
-		resendQueue.offer(request);
+		resendQueue.offer(new HttpResendQueueItem(request));
 	}
 	
 	/**
@@ -72,7 +77,7 @@ public class HttpResendQueue {
 	 */
 	public void offer(final byte[] request, final HttpException e) {
 		if (!e.isClientError()) {
-			resendQueue.offer(request);
+			resendQueue.offer(new HttpResendQueueItem(request));
 		}
 	}
 	
@@ -92,15 +97,54 @@ public class HttpResendQueue {
 	 * @param gzip True if the post should be gzipped, false otherwise
 	 */
 	public void drain(final HttpClient httpClient, final String path, final boolean gzip) {
+		
 		if (!resendQueue.isEmpty()) {
+			
+			// queued items are available for retransmission
+			
 			try {
+				// drain resend queue until empty or first exception
+				
 				LOGGER.info("Attempting to retransmit {} requests", resendQueue.size());
 				
 				while (!resendQueue.isEmpty()) {
-					byte[] jsonBytes = resendQueue.peek();
-					httpClient.post(path, jsonBytes, gzip);
-					resendQueue.remove();
-					Threads.sleepQuietly(250, TimeUnit.MILLISECONDS);
+					
+					// get next item off queue
+					
+					HttpResendQueueItem item = resendQueue.peek();
+					
+					try {
+						
+						// retransmit queued request
+						
+						byte[] jsonBytes = item.getJsonBytes();
+						httpClient.post(path, jsonBytes, gzip);
+						
+						// retransmission successful
+						// remove from queue and sleep for 250ms
+						
+						resendQueue.remove();
+						
+						Threads.sleepQuietly(250, TimeUnit.MILLISECONDS);
+						
+					} catch (Throwable t) {
+						
+						// retransmission failed
+						// increment the item's counter
+						
+						item.failed();
+						
+						// remove it from the queue if we have had MAX_POST_ATTEMPTS (3) failures for the same request
+						
+						if (MAX_POST_ATTEMPTS <= item.getNumFailures())
+						{
+							resendQueue.remove();
+						}
+						
+						// rethrow original exception from retransmission
+						
+						throw t;
+					}
 				}
 			} catch (Throwable t) {
 				LOGGER.info("Failure retransmitting queued requests", t);

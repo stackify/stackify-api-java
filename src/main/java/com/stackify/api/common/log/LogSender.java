@@ -56,9 +56,9 @@ public class LogSender {
 	private final ObjectMapper objectMapper;
 	
 	/**
-	 * The queue of requests to be retransmitted (max of 100 batches of 100 messages)
+	 * The queue of requests to be retransmitted (max of 20 batches of 100 messages)
 	 */
-	private final HttpResendQueue resendQueue = new HttpResendQueue(100); 
+	private final HttpResendQueue resendQueue = new HttpResendQueue(20); 
 
 	/**
 	 * Default constructor
