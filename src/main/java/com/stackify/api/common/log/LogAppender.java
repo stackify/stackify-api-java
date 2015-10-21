@@ -33,6 +33,11 @@ import com.stackify.api.common.util.Preconditions;
 public class LogAppender<T> implements Closeable {
 
 	/**
+	 * Internal package prefix
+	 */
+	private static final String COM_DOT_STACKIFY = "com.stackify.";
+	
+	/**
 	 * Logger project name
 	 */
 	private final String logger;
@@ -132,7 +137,7 @@ public class LogAppender<T> implements Closeable {
 		String className = eventAdapter.getClassName(event);
 		
 		if (className != null) {
-			if (className.startsWith("com.stackify.api.")) {
+			if (className.startsWith(COM_DOT_STACKIFY)) {
 				return;
 			}
 		}

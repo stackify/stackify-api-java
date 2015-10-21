@@ -112,4 +112,27 @@ public class HttpResendQueueTest {
 
 		Assert.assertEquals(0, resendQueue.size());
 	}
+	
+	/**
+	 * testDrainWithExceptionAndSkip
+	 * @throws Exception 
+	 */
+	@Test
+	public void testDrainWithExceptionAndSkip() throws Exception {
+		byte[] request1 = new byte[]{1};
+		
+		HttpResendQueue resendQueue = new HttpResendQueue(3);
+		resendQueue.offer(request1, new IOException());
+		
+		Assert.assertEquals(1, resendQueue.size());
+		
+		HttpClient httpClient = Mockito.mock(HttpClient.class);
+		Mockito.when(httpClient.post("/path", request1, false)).thenThrow(new RuntimeException());
+		
+		resendQueue.drain(httpClient, "/path");
+		Assert.assertEquals(1, resendQueue.size());
+		
+		resendQueue.drain(httpClient, "/path");
+		Assert.assertEquals(0, resendQueue.size());
+	}
 }

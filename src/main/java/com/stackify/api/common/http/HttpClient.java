@@ -44,7 +44,7 @@ public class HttpClient {
 	/**
 	 * READ_TIMEOUT
 	 */
-	private static final int READ_TIMEOUT = 5000;
+	private static final int READ_TIMEOUT = 15000;
 	
 	/**
 	 * API configuration
