@@ -15,6 +15,7 @@
  */
 package com.stackify.api;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -90,6 +91,12 @@ public class LogMsg {
 	@JsonProperty("id")
 	private final String id;
 
+    /**
+     * List of Tags
+     */
+    @JsonProperty("Tags")
+	private final List<String> tags;
+
 	/**
 	 * @return the msg
 	 */
@@ -160,6 +167,14 @@ public class LogMsg {
 		return id;
 	}
 
+    /**
+     * @return the List of Tags
+     */
+    public List<String> getTags()
+    {
+        return tags;
+    }
+
 	/**
 	 * @return An instance of Builder, based on current class state
 	 */
@@ -173,7 +188,8 @@ public class LogMsg {
 			.level(this.level)
 			.transId(this.transId)
 			.srcMethod(this.srcMethod)
-			.srcLine(this.srcLine);
+			.srcLine(this.srcLine)
+            .tags(this.tags);
 	}
 
 	/**
@@ -190,6 +206,7 @@ public class LogMsg {
 		this.srcMethod = builder.srcMethod;
 		this.srcLine = builder.srcLine;
 		this.id = UUID.randomUUID().toString();
+        this.tags = builder.tags;
 	}
 
 	/**
@@ -258,6 +275,12 @@ public class LogMsg {
 		 */
 		@JsonProperty("SrcLine")
 		private Integer srcLine;
+
+        /**
+         * The builder's tags
+         */
+        @JsonProperty("Tags")
+        private List<String> tags;
 
 		/**
 		 * Sets the builder's msg
@@ -348,6 +371,18 @@ public class LogMsg {
 		    this.srcLine = srcLine;
 		    return this;
 		}
+
+        /**
+         * Sets the builder's tags
+         * @param tags A list of tags associated to this LogMsg
+         * @return Reference to the current object
+         */
+        public Builder tags(final List<String> tags)
+        {
+            this.tags = tags;
+            return this;
+        }
+
 
 		/**
 		 * @return A new object constructed from this builder
