@@ -69,6 +69,11 @@ public class LogAppender<T> implements Closeable {
 	private final boolean skipJson;
 
 	/**
+	 * Allow logging from com.stackify.* 
+	 */
+	private boolean allowComDotStackify = false;
+
+	/**
 	 * Constructor
 	 * @param logger Logger project name
 	 */
@@ -117,6 +122,12 @@ public class LogAppender<T> implements Closeable {
 
 		LogSender sender = new LogSender(apiConfig, objectMapper, this.masker, this.skipJson);
 
+		// set allowComDotStackify
+		
+		if (Boolean.TRUE.equals(apiConfig.getAllowComDotStackify())) {
+			this.allowComDotStackify = true;
+		}
+		
 		// build the background service to asynchronously post errors to Stackify
 		// startup the background service
 
@@ -152,11 +163,13 @@ public class LogAppender<T> implements Closeable {
 
 		// skip internal logging
 		
-		String className = eventAdapter.getClassName(event);
-		
-		if (className != null) {
-			if (className.startsWith(COM_DOT_STACKIFY)) {
-				return;
+		if (!allowComDotStackify) {
+			String className = eventAdapter.getClassName(event);
+			
+			if (className != null) {
+				if (className.startsWith(COM_DOT_STACKIFY)) {
+					return;
+				}
 			}
 		}
 		

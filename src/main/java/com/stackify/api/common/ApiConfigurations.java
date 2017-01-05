@@ -43,6 +43,19 @@ public class ApiConfigurations {
 	 * @return ApiConfiguration
 	 */
 	public static ApiConfiguration fromPropertiesWithOverrides(final String apiUrl, final String apiKey, final String application, final String environment) {
+		return fromPropertiesWithOverrides(apiUrl, apiKey, application, environment, null);
+	}
+	
+	/**
+	 * Explicitly configure the API
+	 * @param apiUrl API URL
+	 * @param apiKey API Key
+	 * @param application Configured application name
+	 * @param environment Configured environment name
+	 * @param allowComDotStackify Configured allow com.stackify.* logging
+	 * @return ApiConfiguration
+	 */
+	public static ApiConfiguration fromPropertiesWithOverrides(final String apiUrl, final String apiKey, final String application, final String environment, final String allowComDotStackify) {
 		ApiConfiguration props = ApiConfigurations.fromProperties();
 		
 		String mergedApiUrl = ((apiUrl != null) && (0 < apiUrl.length())) ? apiUrl : props.getApiUrl();
@@ -56,6 +69,7 @@ public class ApiConfigurations {
 		builder.application(mergedApplication);
 		builder.environment(mergedEnvironment);
 		builder.envDetail(EnvironmentDetails.getEnvironmentDetail(mergedApplication, mergedEnvironment));
+		builder.allowComDotStackify(Boolean.valueOf(allowComDotStackify));
 		
 		return builder.build();
 	}

@@ -65,6 +65,11 @@ public class ApiConfiguration {
 	private final Boolean skipJson;
 
 	/**
+	 * Allow logging from com.stackify.* 
+	 */
+	private final Boolean allowComDotStackify;
+	
+	/**
 	 * @return the apiUrl
 	 */
 	public String getApiUrl() {
