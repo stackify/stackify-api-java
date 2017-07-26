@@ -15,19 +15,21 @@
  */
 package com.stackify.api.common.log;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stackify.api.LogMsg;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.http.HttpClient;
 import com.stackify.api.common.http.HttpException;
 import com.stackify.api.common.http.HttpResendQueue;
+import com.stackify.api.common.mask.Masker;
 import com.stackify.api.common.util.Preconditions;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
 
 /**
  * LogSender
@@ -58,21 +60,40 @@ public class LogSender {
 	/**
 	 * The queue of requests to be retransmitted (max of 20 batches of 100 messages)
 	 */
-	private final HttpResendQueue resendQueue = new HttpResendQueue(20); 
+	private final HttpResendQueue resendQueue = new HttpResendQueue(20);
+
+
+	private final Masker masker;
 
 	/**
 	 * Default constructor
 	 * @param apiConfig API configuration
 	 * @param objectMapper JSON object mapper
+	 * @param masker Message Masker
 	 */
-	public LogSender(final ApiConfiguration apiConfig, final ObjectMapper objectMapper) {
-		Preconditions.checkNotNull(apiConfig);
-		Preconditions.checkNotNull(objectMapper);
-
+	public LogSender(@NonNull final ApiConfiguration apiConfig,
+					 @NonNull final ObjectMapper objectMapper,
+					 final Masker masker) {
 		this.apiConfig = apiConfig;
 		this.objectMapper = objectMapper;
+		this.masker = masker;
 	}
-	
+
+	/**
+	 * Returns LogMsgGroup after applying masker to data and msg properties.
+	 */
+	private LogMsgGroup mask(final LogMsgGroup group) {
+		if (masker != null) {
+			if (group.getMsgs().size() > 0) {
+				for (LogMsg logMsg : group.getMsgs()) {
+					logMsg.setData(masker.mask(logMsg.getData()));
+					logMsg.setMsg(masker.mask(logMsg.getMsg()));
+				}
+			}
+		}
+		return group;
+	}
+
 	/**
 	 * Sends a group of log messages to Stackify
 	 * @param group The log message group
@@ -81,7 +102,9 @@ public class LogSender {
 	 */
 	public int send(final LogMsgGroup group) throws IOException {
 		Preconditions.checkNotNull(group);
-		
+
+		LogMsgGroup maskedGroup = mask(group);
+
 		HttpClient httpClient = new HttpClient(apiConfig);
 
 		// retransmit any logs on the resend queue
@@ -90,7 +113,7 @@ public class LogSender {
 		
 		// convert to json bytes
 		
-		byte[] jsonBytes = objectMapper.writer().writeValueAsBytes(group);
+		byte[] jsonBytes = objectMapper.writer().writeValueAsBytes(maskedGroup);
 		
 		// post to stackify
 		

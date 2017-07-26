@@ -15,18 +15,18 @@
  */
 package com.stackify.api.common.log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.stackify.api.LogMsgGroup;
+import com.stackify.api.common.ApiConfiguration;
+import com.stackify.api.common.http.HttpClient;
+import com.stackify.api.common.mask.Masker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.stackify.api.LogMsgGroup;
-import com.stackify.api.common.ApiConfiguration;
-import com.stackify.api.common.http.HttpClient;
 
 /**
  * LogSender JUnit Test
@@ -43,11 +43,12 @@ public class LogSenderTest {
 	@Test
 	public void testSend() throws Exception {
 		ObjectMapper objectMapper = Mockito.mock(ObjectMapper.class);
+		Masker masker = Mockito.mock(Masker.class);
 		Mockito.when(objectMapper.writer()).thenReturn(Mockito.mock(ObjectWriter.class));
 		
 		ApiConfiguration apiConfig = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").build();
-		
-		LogSender sender = new LogSender(apiConfig, objectMapper);
+
+		LogSender sender = new LogSender(apiConfig, objectMapper, masker);
 
 		HttpClient httpClient = PowerMockito.mock(HttpClient.class);
 		PowerMockito.whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);

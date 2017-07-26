@@ -15,16 +15,18 @@
  */
 package com.stackify.api.common.log;
 
-import java.io.Closeable;
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.error.ErrorGovernor;
+import com.stackify.api.common.mask.Masker;
 import com.stackify.api.common.util.Preconditions;
+import lombok.NonNull;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * LogAppender
@@ -61,17 +63,19 @@ public class LogAppender<T> implements Closeable {
 	 * Client side error governor to suppress duplicate errors
 	 */
 	private final ErrorGovernor errorGovernor = new ErrorGovernor();
+ 
+	private final Masker masker;
 
 	/**
 	 * Constructor
 	 * @param logger Logger project name
 	 */
-	public LogAppender(final String logger, final EventAdapter<T> eventAdapter) {
-		Preconditions.checkNotNull(logger);
-		Preconditions.checkArgument(!logger.isEmpty());
-		Preconditions.checkNotNull(eventAdapter);
+	public LogAppender(@NonNull final String logger,
+					   @NonNull final EventAdapter<T> eventAdapter,
+					   final Masker masker) {
 		this.logger = logger;
 		this.eventAdapter = eventAdapter;
+		this.masker = masker;
 	}
 
 	/**
@@ -97,7 +101,7 @@ public class LogAppender<T> implements Closeable {
 
 		this.collector = new LogCollector(logger, apiConfig.getEnvDetail(), appIdentityService);
 
-		LogSender sender = new LogSender(apiConfig, objectMapper);
+		LogSender sender = new LogSender(apiConfig, objectMapper, this.masker);
 
 		// build the background service to asynchronously post errors to Stackify
 		// startup the background service

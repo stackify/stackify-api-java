@@ -72,6 +72,15 @@
 			<version>2.1.3</version>
 		</dependency>
 
+		<!-- Provided dependencies -->
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.10</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Runtime dependencies -->
 
 		<!-- Test dependencies -->
@@ -169,6 +178,9 @@
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<configuration>
+							<failOnError>false</failOnError>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
