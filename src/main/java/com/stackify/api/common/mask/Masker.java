@@ -1,6 +1,7 @@
 package com.stackify.api.common.mask;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +17,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Darin Howard
  */
+@NoArgsConstructor
 @Slf4j
 public class Masker {
 
@@ -35,12 +37,8 @@ public class Masker {
     @Getter
     private final Map<String, Pattern> maskPatterns = new ConcurrentHashMap<String, Pattern>();
 
-    public Masker() {
-    }
-
     public void clearMasks() {
         maskPatterns.clear();
-        ;
     }
 
     public void removeMask(@NonNull final String mask) {
@@ -125,9 +123,8 @@ public class Masker {
 
             for (Pattern pattern : maskPatterns.values()) {
                 Matcher matcher = pattern.matcher(maskedValue);
-                String match = "";
                 while (matcher.find()) {
-                    match = matcher.group();
+                    String match = matcher.group();
                     char[] symbols = new char[match.length()];
                     Arrays.fill(symbols, '*');
                     maskedValue = maskedValue.replace(match, new String(symbols));
