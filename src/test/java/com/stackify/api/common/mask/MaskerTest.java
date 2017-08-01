@@ -1,11 +1,13 @@
 package com.stackify.api.common.mask;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * @author Darin Howard
  */
+@Slf4j
 public class MaskerTest {
 
     @Test
@@ -69,6 +71,36 @@ public class MaskerTest {
         Assert.assertEquals("IPV4 No Match", "255.446.45.256", masker.mask("255.446.45.256"));
         Assert.assertEquals("IPV4 No Match", "3a3.44b.45.256", masker.mask("3a3.44b.45.256"));
         Assert.assertEquals("IPV4 Multiple No Match", "a 3a3.44b.45.256 b 452.33.25 c", masker.mask("a 3a3.44b.45.256 b 452.33.25 c"));
+    }
+
+
+    @Test
+    public void maskPerformance() {
+
+        int count = 1000000;
+
+        {
+            Masker masker = new Masker();
+            masker.removeMask(Masker.MASK_CREDITCARD);
+            masker.removeMask(Masker.MASK_SSN);
+            masker.removeMask(Masker.MASK_IP);
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < count; i++) {
+                masker.mask("This has a single match 502-34-2355.");
+            }
+            long elapsed = System.currentTimeMillis() - start;
+            log.info("Processed " + count + " lines with NO masking matches in " + elapsed + "ms");
+        }
+
+        {
+            Masker masker = new Masker();
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < count; i++) {
+                masker.mask("This has a single match 502-34-2355.");
+            }
+            long elapsed = System.currentTimeMillis() - start;
+            log.info("Processed " + count + " lines with 1 masking matches in " + elapsed + "ms");
+        }
     }
 
 }

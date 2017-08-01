@@ -15,13 +15,14 @@
  */
 package com.stackify.api;
 
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Setter;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Contains the details of a single exception including the stack trace and any causes
@@ -47,8 +48,9 @@ public class ErrorItem {
 	/**
 	 * The error message
 	 */
+	@Setter
 	@JsonProperty("Message")
-	private final String message;
+	private String message;
 
 	/**
 	 * The error's class name

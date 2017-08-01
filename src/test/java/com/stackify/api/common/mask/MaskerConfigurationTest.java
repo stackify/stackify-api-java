@@ -12,7 +12,7 @@ public class MaskerConfigurationTest {
     public void testFromProperties() {
         Masker masker = MaskerConfiguration.fromProperties();
         Assert.assertNotNull(masker);
-        Assert.assertEquals(7, masker.getMaskPatterns().size());
+        Assert.assertEquals(8, masker.getMaskPatterns().size());
         Assert.assertTrue(masker.hasMasks());
     }
 

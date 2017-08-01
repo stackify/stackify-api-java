@@ -14,6 +14,7 @@ import java.util.regex.PatternSyntaxException;
 
 /**
  * Handles masking string values based on regex matching.
+ * Class is Thread Safe.
  *
  * @author Darin Howard
  */
@@ -41,66 +42,69 @@ public class Masker {
         maskPatterns.clear();
     }
 
+    private final Object lock = new Object();
+
     public void removeMask(@NonNull final String mask) {
+        synchronized (lock) {
+            if (mask.equals(MASK_CREDITCARD)) {
+                removeMaskPattern(MASK_CC_VISA_REGEX);
+                removeMaskPattern(MASK_CC_DISCOVER_REGEX);
+                removeMaskPattern(MASK_CC_MASTERCARD_REGEX);
+                removeMaskPattern(MASK_CC_AMEX_REGEX);
+                removeMaskPattern(MASK_CC_DINERS_REGEX);
+                return;
+            }
 
-        if (mask.equals(MASK_CREDITCARD)) {
-            removeMaskPattern(MASK_CC_VISA_REGEX);
-            removeMaskPattern(MASK_CC_DISCOVER_REGEX);
-            removeMaskPattern(MASK_CC_MASTERCARD_REGEX);
-            removeMaskPattern(MASK_CC_AMEX_REGEX);
-            removeMaskPattern(MASK_CC_DINERS_REGEX);
-            return;
+            if (mask.equals(MASK_SSN)) {
+                removeMaskPattern(MASK_SSN_REGEX);
+                return;
+            }
+
+            if (mask.equals(MASK_IP)) {
+                removeMaskPattern(MASK_IPV4_REGEX);
+                return;
+            }
+
+            removeMaskPattern(mask);
         }
-
-        if (mask.equals(MASK_SSN)) {
-            removeMaskPattern(MASK_SSN_REGEX);
-            return;
-        }
-
-        if (mask.equals(MASK_IP)) {
-            removeMaskPattern(MASK_IPV4_REGEX);
-            return;
-        }
-
-        removeMaskPattern(mask);
     }
 
     public void addMask(@NonNull final String mask) {
+        synchronized (lock) {
+            if (mask.equals(MASK_CREDITCARD)) {
+                addMaskPattern(MASK_CC_VISA_REGEX);
+                addMaskPattern(MASK_CC_DISCOVER_REGEX);
+                addMaskPattern(MASK_CC_MASTERCARD_REGEX);
+                addMaskPattern(MASK_CC_AMEX_REGEX);
+                addMaskPattern(MASK_CC_DINERS_REGEX);
+                return;
+            }
 
-        if (mask.equals(MASK_CREDITCARD)) {
-            addMaskPattern(MASK_CC_VISA_REGEX);
-            addMaskPattern(MASK_CC_DISCOVER_REGEX);
-            addMaskPattern(MASK_CC_MASTERCARD_REGEX);
-            addMaskPattern(MASK_CC_AMEX_REGEX);
-            addMaskPattern(MASK_CC_DINERS_REGEX);
-            return;
+            if (mask.equals(MASK_SSN)) {
+                addMaskPattern(MASK_SSN_REGEX);
+                return;
+            }
+
+            if (mask.equals(MASK_IP)) {
+                addMaskPattern(MASK_IPV4_REGEX);
+                return;
+            }
+
+            addMaskPattern(mask);
         }
-
-        if (mask.equals(MASK_SSN)) {
-            addMaskPattern(MASK_SSN_REGEX);
-            return;
-        }
-
-        if (mask.equals(MASK_IP)) {
-            addMaskPattern(MASK_IPV4_REGEX);
-            return;
-        }
-
-        addMaskPattern(mask);
-
     }
 
-    private void addMaskPattern(final String regex) {
+    private synchronized void addMaskPattern(final String regex) {
         if (regex != null) {
             try {
                 maskPatterns.put(regex, Pattern.compile(regex));
             } catch (PatternSyntaxException e) {
-                log.error(String.format("%s: '%s'", e.getMessage(), regex));
+                log.error(String.format("Error Adding Mask: %s: '%s'", e.getMessage(), regex));
             }
         }
     }
 
-    private void removeMaskPattern(final String regex) {
+    private synchronized void removeMaskPattern(final String regex) {
         if (regex != null) {
             try {
                 maskPatterns.remove(regex);
@@ -115,24 +119,29 @@ public class Masker {
      */
     public String mask(final String value) {
 
-        if (hasMasks()) {
+        try {
 
-            if (value == null) return null;
+            if (hasMasks()) {
 
-            String maskedValue = value;
+                if (value == null) return null;
 
-            for (Pattern pattern : maskPatterns.values()) {
-                Matcher matcher = pattern.matcher(maskedValue);
-                while (matcher.find()) {
-                    String match = matcher.group();
-                    char[] symbols = new char[match.length()];
-                    Arrays.fill(symbols, '*');
-                    maskedValue = maskedValue.replace(match, new String(symbols));
+                String maskedValue = value;
+
+                for (Map.Entry<String, Pattern> entry : maskPatterns.entrySet()) {
+                    Matcher matcher = entry.getValue().matcher(maskedValue);
+                    while (matcher.find()) {
+                        String match = matcher.group();
+                        char[] symbols = new char[match.length()];
+                        Arrays.fill(symbols, '*');
+                        maskedValue = maskedValue.replace(match, new String(symbols));
+                    }
                 }
+
+                return maskedValue;
             }
 
-            return maskedValue;
-
+        } catch (Throwable e) {
+            log.warn(e.getMessage(), e);
         }
 
         return value;

@@ -16,6 +16,7 @@
 package com.stackify.api.common.log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stackify.api.ErrorItem;
 import com.stackify.api.LogMsg;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.ApiConfiguration;
@@ -30,13 +31,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 /**
  * LogSender
  * @author Eric Martin
  */
 public class LogSender {
-	
+
 	/**
 	 * The service logger
 	 */
@@ -46,7 +48,7 @@ public class LogSender {
 	 * REST path for log save
 	 */
 	private static final String LOG_SAVE_PATH = "/Log/Save";
-	
+
 	/**
 	 * The API configuration
 	 */
@@ -56,7 +58,7 @@ public class LogSender {
 	 * JSON object mapper
 	 */
 	private final ObjectMapper objectMapper;
-	
+
 	/**
 	 * The queue of requests to be retransmitted (max of 20 batches of 100 messages)
 	 */
@@ -80,18 +82,32 @@ public class LogSender {
 	}
 
 	/**
-	 * Returns LogMsgGroup after applying masker to data and msg properties.
+	 * Applies masking to passed in LogMsgGroup.
 	 */
-	private LogMsgGroup mask(final LogMsgGroup group) {
+	private void mask(final LogMsgGroup group) {
 		if (masker != null) {
 			if (group.getMsgs().size() > 0) {
 				for (LogMsg logMsg : group.getMsgs()) {
+					if (logMsg.getEx() != null) {
+						mask(logMsg.getEx().getError());
+					}
 					logMsg.setData(masker.mask(logMsg.getData()));
 					logMsg.setMsg(masker.mask(logMsg.getMsg()));
 				}
 			}
 		}
-		return group;
+	}
+
+	private void mask(final ErrorItem errorItem) {
+        if (errorItem != null) {
+            errorItem.setMessage(masker.mask(errorItem.getMessage()));
+            if (errorItem.getData() != null) {
+                for (Map.Entry<String, String> entry : errorItem.getData().entrySet()) {
+                    entry.setValue(masker.mask(entry.getValue()));
+                }
+            }
+            mask(errorItem.getInnerError());
+        }
 	}
 
 	/**
@@ -103,35 +119,35 @@ public class LogSender {
 	public int send(final LogMsgGroup group) throws IOException {
 		Preconditions.checkNotNull(group);
 
-		LogMsgGroup maskedGroup = mask(group);
+		mask(group);
 
 		HttpClient httpClient = new HttpClient(apiConfig);
 
 		// retransmit any logs on the resend queue
-		
+
 		resendQueue.drain(httpClient, LOG_SAVE_PATH, true);
-		
+
 		// convert to json bytes
-		
-		byte[] jsonBytes = objectMapper.writer().writeValueAsBytes(maskedGroup);
-		
+
+		byte[] jsonBytes = objectMapper.writer().writeValueAsBytes(group);
+
 		// post to stackify
-		
+
 		int statusCode = HttpURLConnection.HTTP_INTERNAL_ERROR;
-		
+
 		try {
 			httpClient.post(LOG_SAVE_PATH, jsonBytes, true);
 			statusCode = HttpURLConnection.HTTP_OK;
 		} catch (IOException t) {
 			LOGGER.info("Queueing logs for retransmission due to IOException");
 			resendQueue.offer(jsonBytes, t);
-			throw t;			
+			throw t;
 		} catch (HttpException e) {
 			statusCode = e.getStatusCode();
 			LOGGER.info("Queueing logs for retransmission due to HttpException", e);
 			resendQueue.offer(jsonBytes, e);
 		}
-		
+
 		return statusCode;
 	}
 }

@@ -1,12 +1,12 @@
 package com.stackify.api.common.mask;
 
 
+import com.stackify.api.common.util.PropertyUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.FileReader;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * Handled properties:
@@ -22,65 +22,64 @@ public class MaskerConfiguration {
 
     public static Masker fromProperties() {
 
+        String propertiesFilePath = null;
+
+        URL confFileUrl = MaskerConfiguration.class.getResource("/stackify-api.properties");
+        if (confFileUrl != null) {
+            try {
+                propertiesFilePath = confFileUrl.toURI().getPath();
+            } catch (URISyntaxException e) {
+                log.warn(e.getMessage(), e);
+            }
+        }
+
+        return fromProperties(propertiesFilePath);
+    }
+
+    public static Masker fromProperties(String propertiesFilePath) {
+
         Masker masker = new Masker();
 
         // set default enabled masks
         masker.addMask(Masker.MASK_CREDITCARD);
         masker.addMask(Masker.MASK_SSN);
 
-        FileReader confFileReader = null;
-
         try {
-            URL confFileUrl = MaskerConfiguration.class.getResource("/stackify-api.properties");
 
-            if (confFileUrl != null) {
-                File confFile = new File(confFileUrl.toURI());
+            if (propertiesFilePath != null) {
 
-                if (confFile.exists()) {
+                Map<String, String> map = PropertyUtil.read(propertiesFilePath);
 
-                    confFileReader = new FileReader(confFile);
-
-                    Properties confProps = new Properties();
-                    confProps.load(confFileReader);
-
-                    if (confProps.containsKey("stackify.log.mask.enabled")) {
-                        if (!Boolean.parseBoolean(confProps.getProperty("stackify.log.mask.enabled"))) {
-                            masker.clearMasks();
-                            return masker;
-                        }
+                if (map.containsKey("stackify.log.mask.enabled")) {
+                    if (!Boolean.parseBoolean(map.get("stackify.log.mask.enabled"))) {
+                        masker.clearMasks();
+                        return masker;
                     }
-
-                    // set masks
-                    for (String builtinMask : Masker.MASKS) {
-                        if (confProps.contains("stackify.log.mask." + builtinMask)) {
-                            if (Boolean.parseBoolean(confProps.getProperty("stackify.log.mask." + builtinMask))) {
-                                masker.addMask(builtinMask);
-                            } else {
-                                masker.removeMask(builtinMask);
-                            }
-                        }
-                    }
-
-                    // set custom masks
-                    for (Object key : confProps.keySet()) {
-                        if (key.toString().startsWith("stackify.log.mask.custom.")) {
-                            masker.addMask(confProps.getProperty(key.toString()));
-                        }
-                    }
-
                 }
+
+                // set masks
+                for (String builtinMask : Masker.MASKS) {
+                    if (map.containsKey("stackify.log.mask." + builtinMask)) {
+                        if (Boolean.parseBoolean(map.get("stackify.log.mask." + builtinMask))) {
+                            masker.addMask(builtinMask);
+                        } else {
+                            masker.removeMask(builtinMask);
+                        }
+                    }
+                }
+
+                // set custom masks
+                for (Object key : map.keySet()) {
+                    if (key.toString().startsWith("stackify.log.mask.custom.")) {
+                        masker.addMask(map.get(key.toString()));
+                    }
+                }
+
+
             }
 
         } catch (Throwable t) {
-            log.error("Exception reading stackify-api.properties configuration file", t);
-        } finally {
-            if (confFileReader != null) {
-                try {
-                    confFileReader.close();
-                } catch (Throwable t) {
-                    log.info("Exception closing stackify-api.properties configuration file", t);
-                }
-            }
+            log.error("Exception reading " + propertiesFilePath + " configuration file", t);
         }
 
         return masker;
