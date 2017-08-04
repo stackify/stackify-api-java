@@ -46,9 +46,9 @@ stackify.environment=YOUR_ENVIRONMENT
 
 The Stackify logger has built-in data masking for credit cards and social security number values.
 
-**Disable Masking:**
+**Enable Masking:**
 
-Add `stackify.log.mask.enabled=false` to `stackify-api.properties`.
+Add `stackify.log.mask.enabled=true` to `stackify-api.properties`.
 
 **Customize Masking:**
 

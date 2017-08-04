@@ -50,11 +50,11 @@ public class MaskerConfiguration {
 
                 Map<String, String> map = PropertyUtil.read(propertiesFilePath);
 
-                if (map.containsKey("stackify.log.mask.enabled")) {
-                    if (!Boolean.parseBoolean(map.get("stackify.log.mask.enabled"))) {
-                        masker.clearMasks();
-                        return masker;
-                    }
+                // masker defaults to disabled
+                if (!map.containsKey("stackify.log.mask.enabled") ||
+                        !Boolean.parseBoolean(map.get("stackify.log.mask.enabled")))  {
+                    masker.clearMasks();
+                    return masker;
                 }
 
                 // set masks
