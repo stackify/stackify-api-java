@@ -42,6 +42,30 @@ stackify.application=YOUR_APPLICATION_NAME
 stackify.environment=YOUR_ENVIRONMENT
 ```
 
+### Masking
+
+The Stackify logger has built-in data masking for credit cards and social security number values.
+
+**Enable Masking:**
+
+Add `stackify.log.mask.enabled=true` to `stackify-api.properties`.
+
+**Customize Masking:**
+
+The example below has the following customizations: 
+
+1. Credit Card value masking is disabled (`stackify.log.mask.CREDITCARD=false`)
+2. IP Address masking is enabled (`stackify.log.mask.IP=true`). Built in masks are `CREDITCARD`, `SSN` and `IP`.
+3. Custom masking to remove vowels using a regex (`stackify.log.mask.custom.VOWELS=[aeiou]`)
+ 
+```
+stackify.log.mask.enabled=true
+stackify.log.mask.CREDITCARD=false
+stackify.log.mask.SSN=true
+stackify.log.mask.IP=true
+stackify.log.mask.custom.VOWELS=[aeiou]
+``` 
+
 Note: *If you are logging from a device that has the stackify-agent installed, the environment setting is optional. We will use the environment associated to your device in Stackify.*
 
 Log a message to Stackify 

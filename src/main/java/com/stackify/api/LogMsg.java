@@ -22,11 +22,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * LogMsg
  * @author Eric Martin
  */
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = LogMsg.Builder.class)
 public class LogMsg {
@@ -34,14 +37,16 @@ public class LogMsg {
 	/**
 	 * The log message
 	 */
+	@Setter
 	@JsonProperty("Msg")
-	private final String msg;
+	private String msg;
 
 	/**
 	 * Extra contextual data from the log message
 	 */
+	@Setter
 	@JsonProperty("data")
-	private final String data;
+	private String data;
 
 	/**
 	 * The error/exception details
@@ -97,83 +102,6 @@ public class LogMsg {
     @JsonProperty("Tags")
 	private final List<String> tags;
 
-	/**
-	 * @return the msg
-	 */
-	public String getMsg() {
-		return msg;
-	}
-
-	/**
-	 * @return the data
-	 */
-	public String getData() {
-		return data;
-	}
-
-	/**
-	 * @return the ex
-	 */
-	public StackifyError getEx() {
-		return ex;
-	}
-
-	/**
-	 * @return the th
-	 */
-	public String getTh() {
-		return th;
-	}
-
-	/**
-	 * @return the epochMs
-	 */
-	public Long getEpochMs() {
-		return epochMs;
-	}
-
-	/**
-	 * @return the level
-	 */
-	public String getLevel() {
-		return level;
-	}
-
-	/**
-	 * @return the transId
-	 */
-	public String getTransId() {
-		return transId;
-	}
-
-	/**
-	 * @return the srcMethod
-	 */
-	public String getSrcMethod() {
-		return srcMethod;
-	}
-
-	/**
-	 * @return the srcLine
-	 */
-	public Integer getSrcLine() {
-		return srcLine;
-	}
-
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
-
-    /**
-     * @return the List of Tags
-     */
-    public List<String> getTags()
-    {
-        return tags;
-    }
 
 	/**
 	 * @return An instance of Builder, based on current class state

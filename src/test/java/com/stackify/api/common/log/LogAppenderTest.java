@@ -15,18 +15,18 @@
  */
 package com.stackify.api.common.log;
 
+import com.stackify.api.EnvironmentDetail;
+import com.stackify.api.LogMsg;
+import com.stackify.api.StackifyError;
+import com.stackify.api.common.ApiConfiguration;
+import com.stackify.api.common.error.ErrorGovernor;
+import com.stackify.api.common.mask.Masker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import com.stackify.api.EnvironmentDetail;
-import com.stackify.api.LogMsg;
-import com.stackify.api.StackifyError;
-import com.stackify.api.common.ApiConfiguration;
-import com.stackify.api.common.error.ErrorGovernor;
 
 /**
  * LogAppender JUnit Test
@@ -43,7 +43,7 @@ public class LogAppenderTest {
 	@Test
 	public void testActivate() throws Exception {
 		EventAdapter<?> adapter = Mockito.mock(EventAdapter.class);
-		LogAppender<?> appender = new LogAppender("logger", adapter);
+		LogAppender<?> appender = new LogAppender("logger", adapter, new Masker());
 		
 		LogCollector collector = Mockito.mock(LogCollector.class);
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
@@ -65,7 +65,7 @@ public class LogAppenderTest {
 	@Test
 	public void testClose() throws Exception {
 		EventAdapter<?> adapter = Mockito.mock(EventAdapter.class);
-		LogAppender<?> appender = new LogAppender("logger", adapter);
+		LogAppender<?> appender = new LogAppender("logger", adapter, new Masker());
 		
 		LogCollector collector = Mockito.mock(LogCollector.class);
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
@@ -99,7 +99,7 @@ public class LogAppenderTest {
 		Mockito.when(governor.errorShouldBeSent(Mockito.any(StackifyError.class))).thenReturn(true);
 		PowerMockito.whenNew(ErrorGovernor.class).withAnyArguments().thenReturn(governor);
 		
-		LogAppender<String> appender = new LogAppender<String>("logger", adapter);
+		LogAppender<String> appender = new LogAppender<String>("logger", adapter, new Masker());
 		
 		LogCollector collector = Mockito.mock(LogCollector.class);
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
@@ -130,7 +130,7 @@ public class LogAppenderTest {
 		
 		EventAdapter<String> adapter = Mockito.mock(EventAdapter.class);
 		
-		LogAppender<String> appender = new LogAppender<String>("logger", adapter);
+		LogAppender<String> appender = new LogAppender<String>("logger", adapter, new Masker());
 		
 		LogCollector collector = Mockito.mock(LogCollector.class);
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
@@ -157,7 +157,7 @@ public class LogAppenderTest {
 		Mockito.when(governor.errorShouldBeSent(Mockito.any(StackifyError.class))).thenReturn(true);
 		PowerMockito.whenNew(ErrorGovernor.class).withAnyArguments().thenReturn(governor);
 		
-		LogAppender<String> appender = new LogAppender<String>("logger", adapter);
+		LogAppender<String> appender = new LogAppender<String>("logger", adapter, new Masker());
 		
 		LogCollector collector = Mockito.mock(LogCollector.class);
 		PowerMockito.whenNew(LogCollector.class).withAnyArguments().thenReturn(collector);
