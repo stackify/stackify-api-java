@@ -37,21 +37,24 @@ public class ApiConfigurations {
 	/**
 	 * Explicitly configure the API
 	 * @param apiUrl API URL
+	 * @param authUrl Auth URL
 	 * @param apiKey API Key
 	 * @param application Configured application name
 	 * @param environment Configured environment name
 	 * @return ApiConfiguration
 	 */
-	public static ApiConfiguration fromPropertiesWithOverrides(final String apiUrl, final String apiKey, final String application, final String environment) {
+	public static ApiConfiguration fromPropertiesWithOverrides(final String apiUrl, final String authUrl, final String apiKey, final String application, final String environment) {
 		ApiConfiguration props = ApiConfigurations.fromProperties();
 		
 		String mergedApiUrl = ((apiUrl != null) && (0 < apiUrl.length())) ? apiUrl : props.getApiUrl();
+		String mergedAuthUrl = ((authUrl != null) && (0 < authUrl.length())) ? authUrl : props.getAuthUrl();
 		String mergedApiKey = ((apiKey != null) && (0 < apiKey.length())) ? apiKey : props.getApiKey();
 		String mergedApplication = ((application != null) && (0 < application.length())) ? application : props.getApplication();
 		String mergedEnvironment = ((environment != null) && (0 < environment.length())) ? environment : props.getEnvironment();
 		
 		ApiConfiguration.Builder builder = ApiConfiguration.newBuilder();
 		builder.apiUrl(mergedApiUrl);
+		builder.authUrl(mergedAuthUrl);
 		builder.apiKey(mergedApiKey);
 		builder.application(mergedApplication);
 		builder.environment(mergedEnvironment);

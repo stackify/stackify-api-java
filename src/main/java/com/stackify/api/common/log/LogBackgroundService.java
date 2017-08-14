@@ -80,6 +80,13 @@ public class LogBackgroundService extends BackgroundService {
 	 */
 	@Override
 	protected void runOneIteration() {
+
+		try {
+			collector.flushRetries(sender);
+		} catch (Throwable t) {
+			LOGGER.info("Exception running retries Stackify_LogBackgroundService", t);
+		}
+
 		try {
 			int numSent = collector.flush(sender);
 			scheduler.update(numSent);
@@ -94,6 +101,13 @@ public class LogBackgroundService extends BackgroundService {
 	 */
 	@Override
 	protected void shutDown() {
+
+		try {
+			collector.flushRetries(sender);
+		} catch (Throwable t) {
+			LOGGER.info("Exception flushing retry log collector during shut down", t);
+		}
+
 		try {
 			collector.flush(sender);
 		} catch (Throwable t) {

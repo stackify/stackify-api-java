@@ -19,9 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
 import com.stackify.api.common.ApiConfiguration;
-import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.error.ErrorGovernor;
 import com.stackify.api.common.mask.Masker;
+import com.stackify.api.common.oauth.OAuth2Service;
 import com.stackify.api.common.util.Preconditions;
 import lombok.NonNull;
 
@@ -38,11 +38,6 @@ public class LogAppender<T> implements Closeable {
 	 * Internal package prefix
 	 */
 	private static final String COM_DOT_STACKIFY = "com.stackify.";
-	
-	/**
-	 * Logger project name
-	 */
-	private final String logger;
 
 	/**
 	 * Maps from specific log implementation events to our API
@@ -59,6 +54,8 @@ public class LogAppender<T> implements Closeable {
 	 */
 	private LogBackgroundService backgroundService = null;
 
+	private final String apiClientName;
+
 	/**
 	 * Client side error governor to suppress duplicate errors
 	 */
@@ -68,12 +65,11 @@ public class LogAppender<T> implements Closeable {
 
 	/**
 	 * Constructor
-	 * @param logger Logger project name
 	 */
-	public LogAppender(@NonNull final String logger,
+	public LogAppender(@NonNull final String apiClientName,
 					   @NonNull final EventAdapter<T> eventAdapter,
 					   final Masker masker) {
-		this.logger = logger;
+		this.apiClientName = apiClientName;
 		this.eventAdapter = eventAdapter;
 		this.masker = masker;
 	}
@@ -82,8 +78,8 @@ public class LogAppender<T> implements Closeable {
 	 * Activates the appender
 	 * @param apiConfig API configuration
 	 */
-	public void activate(final ApiConfiguration apiConfig) {
-		Preconditions.checkNotNull(apiConfig);
+	public void activate(@NonNull final ApiConfiguration apiConfig) {
+
 		Preconditions.checkNotNull(apiConfig.getApiUrl());
 		Preconditions.checkArgument(!apiConfig.getApiUrl().isEmpty());
 		Preconditions.checkNotNull(apiConfig.getApiKey());
@@ -95,11 +91,11 @@ public class LogAppender<T> implements Closeable {
 
 		// build the app identity service
 
-		AppIdentityService appIdentityService = new AppIdentityService(apiConfig, objectMapper);
+		//AppIdentityService appIdentityService = new AppIdentityService(apiConfig, objectMapper);
 
 		// build the services for collecting and sending log messages
 
-		this.collector = new LogCollector(logger, apiConfig.getEnvDetail(), appIdentityService);
+		this.collector = new LogCollector(apiClientName, apiConfig, new OAuth2Service(apiConfig));
 
 		LogSender sender = new LogSender(apiConfig, objectMapper, this.masker);
 
@@ -125,6 +121,7 @@ public class LogAppender<T> implements Closeable {
 	 * @param event
 	 */
 	public void append(final T event) {
+
 
 		// make sure we can append the log message
 

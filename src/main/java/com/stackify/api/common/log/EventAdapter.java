@@ -45,7 +45,7 @@ public interface EventAdapter<T> {
 	 * @param error The exception (optional)
 	 * @return The LogMsg
 	 */
-	LogMsg getLogMsg(final T event, final StackifyError error);	
+	LogMsg getLogMsg(final T event, final StackifyError error);
 	
 	/**
 	 * Returns true if the event was logged at an error level

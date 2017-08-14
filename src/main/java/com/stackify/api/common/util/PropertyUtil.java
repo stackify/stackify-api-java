@@ -58,7 +58,8 @@ public class PropertyUtil {
                 }
 
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                System.err.println(e.getMessage());
+                e.printStackTrace();
             }
         }
 

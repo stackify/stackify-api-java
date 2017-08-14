@@ -88,9 +88,6 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		return builder.build();
 	}
 
-	/**
-	 * @see com.stackify.api.common.log.EventAdapter#getLogMsg(java.lang.Object, com.google.common.base.Optional)
-	 */
 	@Override
 	public LogMsg getLogMsg(final LogEvent event, final StackifyError error) {
 		LogMsg.Builder builder = LogMsg.newBuilder();

@@ -68,10 +68,8 @@ public class LogManager
 	private static synchronized void startup() {
 		try {
 			CONFIG = ApiConfigurations.fromProperties();
-			
-			String clientName = ApiClients.getApiClient(LogManager.class, "/stackify-api-common.properties", "stackify-api-common");
-
-			LOG_APPENDER = new LogAppender<LogEvent>(clientName, new LogEventAdapter(CONFIG.getEnvDetail()), MaskerConfiguration.fromProperties());
+			String apiClientName = ApiClients.getApiClient(ApiClients.class, "/stackify-api-common.properties", "stackify-api-common");
+			LOG_APPENDER = new LogAppender<LogEvent>(apiClientName, new LogEventAdapter(CONFIG.getEnvDetail()), MaskerConfiguration.fromProperties());
 			LOG_APPENDER.activate(CONFIG);
 		} catch (Throwable t) {
 			LOGGER.error("Exception starting Stackify Log API service", t);

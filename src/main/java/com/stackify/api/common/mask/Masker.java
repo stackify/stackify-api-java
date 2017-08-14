@@ -99,7 +99,7 @@ public class Masker {
             try {
                 maskPatterns.put(regex, Pattern.compile(regex));
             } catch (PatternSyntaxException e) {
-                log.error(String.format("Error Adding Mask: %s: '%s'", e.getMessage(), regex));
+                System.err.println(String.format("Error Adding Mask: %s: '%s'", e.getMessage(), regex));
             }
         }
     }
@@ -109,7 +109,7 @@ public class Masker {
             try {
                 maskPatterns.remove(regex);
             } catch (PatternSyntaxException e) {
-                log.error(String.format("%s: '%s'", e.getMessage(), regex));
+                System.err.println(String.format("%s: '%s'", e.getMessage(), regex));
             }
         }
     }
@@ -141,7 +141,8 @@ public class Masker {
             }
 
         } catch (Throwable e) {
-            log.warn(e.getMessage(), e);
+            System.err.print(e.getMessage());
+            e.printStackTrace();
         }
 
         return value;

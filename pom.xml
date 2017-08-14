@@ -83,6 +83,15 @@
 
 		<!-- Runtime dependencies -->
 
+		<!-- Provided dependencies -->
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.10</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Test dependencies -->
 
 		<dependency>
@@ -180,6 +189,7 @@
 						</goals>
 						<configuration>
 							<failOnError>false</failOnError>
+							<additionalparam>-Xdoclint:none</additionalparam>
 						</configuration>
 					</execution>
 				</executions>

@@ -29,7 +29,8 @@ public class MaskerConfiguration {
             try {
                 propertiesFilePath = confFileUrl.toURI().getPath();
             } catch (URISyntaxException e) {
-                log.warn(e.getMessage(), e);
+                System.err.println(e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -79,7 +80,8 @@ public class MaskerConfiguration {
             }
 
         } catch (Throwable t) {
-            log.error("Exception reading " + propertiesFilePath + " configuration file", t);
+            System.err.println("Exception reading " + propertiesFilePath + " configuration file");
+            t.printStackTrace();
         }
 
         return masker;

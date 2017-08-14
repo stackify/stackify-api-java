@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.http.HttpClient;
+import com.stackify.api.common.http.HttpResponse;
 import com.stackify.api.common.mask.Masker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +53,7 @@ public class LogSenderTest {
 
 		HttpClient httpClient = PowerMockito.mock(HttpClient.class);
 		PowerMockito.whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);
-		PowerMockito.when(httpClient.post(Mockito.anyString(), (byte[]) Mockito.any())).thenReturn("");
+		PowerMockito.when(httpClient.executePost(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), (byte[]) Mockito.any(), Mockito.anyBoolean())).thenReturn(new HttpResponse(200, ""));
 
 		sender.send(Mockito.mock(LogMsgGroup.class));
 	}

@@ -15,88 +15,159 @@
  */
 package com.stackify.api.common.log;
 
-import java.io.IOException;
-
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.stackify.api.AppIdentity;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
 import com.stackify.api.LogMsgGroup;
-import com.stackify.api.common.AppIdentityService;
+import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.http.HttpException;
+import com.stackify.api.common.oauth.OAuth2Service;
+import com.stackify.api.common.oauth.OAuth2Token;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.io.IOException;
 
 /**
  * LogCollector JUnit Test
+ *
  * @author Eric Martin
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({OAuth2Service.class, LogCollector.class})
 public class LogCollectorTest {
 
-	/**
-	 * testFlushEmpty
-	 * @throws HttpException 
-	 * @throws IOException 
-	 */
-	@Test
-	public void testFlushEmpty() throws IOException, HttpException {
-		LogSender sender = Mockito.mock(LogSender.class);
-		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
-		
-		collector.flush(sender);
-		
-		Mockito.verifyZeroInteractions(sender);
-		Mockito.verifyZeroInteractions(appIdentityService);
-	}
+    @Test
+    public void testFlushEmpty() throws IOException, HttpException {
+        LogSender sender = Mockito.mock(LogSender.class);
+        LogCollector collector = new LogCollector("logger", Mockito.mock(ApiConfiguration.class), Mockito.mock(OAuth2Service.class));
 
-	/**
-	 * testAddAndFlushWithoutAppIdentity
-	 * @throws IOException 
-	 * @throws HttpException 
-	 */
-	@Test
-	public void testAddAndFlushWithoutAppIdentity() throws IOException, HttpException {
-		LogSender sender = Mockito.mock(LogSender.class);
-		Mockito.when(sender.send(Mockito.any(LogMsgGroup.class))).thenReturn(200);
+        collector.flush(sender);
 
-		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(null);
-		
-		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
-		
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		
-		collector.flush(sender);
-		
-		Mockito.verify(appIdentityService).getAppIdentity();
-		Mockito.verify(sender).send(Mockito.any(LogMsgGroup.class));
-	}
-	
-	/**
-	 * testAddAndFlushWithAppIdentity
-	 * @throws IOException 
-	 * @throws HttpException 
-	 */
-	@Test
-	public void testAddAndFlushWithAppIdentity() throws IOException, HttpException {
-		LogSender sender = Mockito.mock(LogSender.class);
-		Mockito.when(sender.send(Mockito.any(LogMsgGroup.class))).thenReturn(200);
+        Mockito.verifyZeroInteractions(sender);
+    }
 
-		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(Mockito.mock(AppIdentity.class));
+    @Test
+    public void testAddAndFlushWithoutAppIdentity() throws IOException, HttpException {
+        LogSender sender = Mockito.mock(LogSender.class);
 
-		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
-		
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		
-		collector.flush(sender);
-		
-		Mockito.verify(appIdentityService).getAppIdentity();
-		Mockito.verify(sender).send(Mockito.any(LogMsgGroup.class));
-	}
+        OAuth2Service oAuth2Service = Mockito.mock(OAuth2Service.class);
+        Mockito.when(oAuth2Service.getAccessToken((EnvironmentDetail) Mockito.any())).thenReturn(Mockito.mock(OAuth2Token.class));
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(ApiConfiguration.class), oAuth2Service);
+
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+
+        collector.flush(sender);
+
+        Mockito.verify(sender).send(Mockito.any(LogMsgGroup.class));
+    }
+
+    @Test
+    public void testAddAndFlushWithAppIdentity() throws IOException, HttpException {
+        LogSender sender = Mockito.mock(LogSender.class);
+
+        OAuth2Service oAuth2Service = Mockito.mock(OAuth2Service.class);
+        Mockito.when(oAuth2Service.getAccessToken((EnvironmentDetail) Mockito.any())).thenReturn(Mockito.mock(OAuth2Token.class));
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(ApiConfiguration.class), oAuth2Service);
+
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+
+        collector.flush(sender);
+
+        Mockito.verify(sender).send(Mockito.any(LogMsgGroup.class));
+    }
+
+    @Test
+    public void testOffer() {
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(ApiConfiguration.class), Mockito.mock(OAuth2Service.class));
+        Assert.assertEquals(0, collector.retryQueue.size());
+
+        LogMsgGroup logMsgGroup = Mockito.mock(LogMsgGroup.class);
+        collector.retryQueue.offer(new LogCollector.RetryQueueItem<LogMsgGroup>(logMsgGroup));
+        Assert.assertEquals(1, collector.retryQueue.size());
+    }
+
+    @Test
+    public void testDrain() throws Exception {
+
+        LogMsgGroup logMsgGroup1 = Mockito.mock(LogMsgGroup.class);
+        LogMsgGroup logMsgGroup2 = Mockito.mock(LogMsgGroup.class);
+
+        OAuth2Service oAuth2Service = Mockito.mock(OAuth2Service.class);
+        Mockito.when(oAuth2Service.getAccessToken((EnvironmentDetail) Mockito.any())).thenReturn(Mockito.mock(OAuth2Token.class));
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(ApiConfiguration.class), oAuth2Service);
+        collector.retryQueue.offer(new LogCollector.RetryQueueItem<LogMsgGroup>(logMsgGroup1));
+        collector.retryQueue.offer(new LogCollector.RetryQueueItem<LogMsgGroup>(logMsgGroup2));
+
+        Assert.assertEquals(2, collector.retryQueue.size());
+
+        LogSender logSender = Mockito.mock(LogSender.class);
+        collector.flushRetries(logSender);
+
+        Assert.assertEquals(0, collector.retryQueue.size());
+    }
+
+    @Test
+    public void testDrainWithException() throws Exception {
+
+        LogMsgGroup logMsgGroup1 = Mockito.mock(LogMsgGroup.class);
+        LogMsgGroup logMsgGroup2 = Mockito.mock(LogMsgGroup.class);
+
+        OAuth2Service oAuth2Service = Mockito.mock(OAuth2Service.class);
+        Mockito.when(oAuth2Service.getAccessToken((EnvironmentDetail) Mockito.any())).thenReturn(Mockito.mock(OAuth2Token.class));
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(ApiConfiguration.class), oAuth2Service);
+        collector.retryQueue.offer(new LogCollector.RetryQueueItem<LogMsgGroup>(logMsgGroup1));
+        collector.retryQueue.offer(new LogCollector.RetryQueueItem<LogMsgGroup>(logMsgGroup2));
+
+        Assert.assertEquals(2, collector.retryQueue.size());
+
+        LogSender logSender = Mockito.mock(LogSender.class);
+        Mockito.when(logSender.send(logMsgGroup2)).thenThrow(new RuntimeException()).thenReturn(false);
+
+        collector.flushRetries(logSender);
+
+        Assert.assertEquals(1, collector.retryQueue.size());
+
+        collector.flushRetries(logSender);
+
+        Assert.assertEquals(0, collector.retryQueue.size());
+    }
+
+    @Test
+    public void testDrainWithExceptionAndSkip() throws Exception {
+
+        LogMsgGroup logMsgGroup1 = Mockito.mock(LogMsgGroup.class);
+
+        OAuth2Service oAuth2Service = Mockito.mock(OAuth2Service.class);
+        Mockito.when(oAuth2Service.getAccessToken((EnvironmentDetail) Mockito.any())).thenReturn(Mockito.mock(OAuth2Token.class));
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(ApiConfiguration.class), oAuth2Service);
+        collector.retryQueue.offer(new LogCollector.RetryQueueItem<LogMsgGroup>(logMsgGroup1));
+
+        Assert.assertEquals(1, collector.retryQueue.size());
+
+        LogSender logSender = Mockito.mock(LogSender.class);
+        Mockito.when(logSender.send(logMsgGroup1)).thenThrow(new RuntimeException()).thenReturn(false);
+
+        collector.flushRetries(logSender);
+
+        Assert.assertEquals(1, collector.retryQueue.size());
+
+        collector.flushRetries(logSender);
+
+        Assert.assertEquals(0, collector.retryQueue.size());
+    }
+
 }

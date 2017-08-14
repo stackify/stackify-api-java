@@ -30,14 +30,16 @@ public class ApiConfigurationsTest {
 	@Test
 	public void fromPropertiesWithOverrides() {
 		String apiUrl = "urlOverride";
+		String authUrl = "authUrlOverride";
 		String apiKey = "keyOverride";
 		String application = "appOverride";
 		String environment = "envOverride";
 				
-		ApiConfiguration apiConfig = ApiConfigurations.fromPropertiesWithOverrides(apiUrl, apiKey, application, environment);
+		ApiConfiguration apiConfig = ApiConfigurations.fromPropertiesWithOverrides(apiUrl, authUrl, apiKey, application, environment);
 		
 		Assert.assertNotNull(apiConfig);
 		Assert.assertEquals(apiUrl, apiConfig.getApiUrl());
+		Assert.assertEquals(authUrl, apiConfig.getAuthUrl());
 		Assert.assertEquals(apiKey, apiConfig.getApiKey());
 		Assert.assertEquals(application, apiConfig.getApplication());
 		Assert.assertEquals(environment, apiConfig.getEnvironment());

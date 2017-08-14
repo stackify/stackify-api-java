@@ -89,7 +89,7 @@ public class MaskerTest {
                 masker.mask("This has a single match 502-34-2355.");
             }
             long elapsed = System.currentTimeMillis() - start;
-            log.info("Processed " + count + " lines with NO masking matches in " + elapsed + "ms");
+            System.out.println("Processed " + count + " lines with NO masking matches in " + elapsed + "ms");
         }
 
         {
@@ -99,7 +99,7 @@ public class MaskerTest {
                 masker.mask("This has a single match 502-34-2355.");
             }
             long elapsed = System.currentTimeMillis() - start;
-            log.info("Processed " + count + " lines with 1 masking matches in " + elapsed + "ms");
+            System.out.println("Processed " + count + " lines with 1 masking matches in " + elapsed + "ms");
         }
     }
 

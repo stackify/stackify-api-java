@@ -60,19 +60,19 @@ public class HttpClientTest {
 		PowerMockito.when(connection.getInputStream()).thenReturn(contents);
 		PowerMockito.when(connection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
 
-		HttpClient httpClient = new HttpClient(Mockito.mock(ApiConfiguration.class));
+		HttpClient httpClient = new HttpClient();
 		
-		String world = httpClient.post("path", "hello".getBytes());
+		HttpResponse world = httpClient.executePost("accessToken","url","path", "hello".getBytes(), true);
 		
 		Assert.assertNotNull(world);
-		Assert.assertEquals("world", world);
+		Assert.assertEquals("world", world.getResponseBody());
 	}
 
 	/**
 	 * testPostWithHttpError
 	 * @throws Exception 
 	 */
-	@Test(expected = HttpException.class)
+	@Test
 	public void testPostWithHttpError() throws Exception {
 		
 		URL url = PowerMockito.mock(URL.class);
@@ -89,9 +89,11 @@ public class HttpClientTest {
 		PowerMockito.when(connection.getInputStream()).thenReturn(contents);
 		PowerMockito.when(connection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
 
-		HttpClient httpClient = new HttpClient(Mockito.mock(ApiConfiguration.class));
-		
-		httpClient.post("path", "hello".getBytes());
+		HttpClient httpClient = new HttpClient();
+
+		HttpResponse httpResponse = httpClient.executePost("accessToken", "url","path", "hello".getBytes(), true);
+
+		Assert.assertEquals(HttpURLConnection.HTTP_INTERNAL_ERROR, httpResponse.getStatusCode());
 	}
 	
 	/**
@@ -115,11 +117,11 @@ public class HttpClientTest {
 		PowerMockito.when(connection.getInputStream()).thenReturn(contents);
 		PowerMockito.when(connection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
 
-		HttpClient httpClient = new HttpClient(Mockito.mock(ApiConfiguration.class));
-		
-		String world = httpClient.post("path", "hello".getBytes(), true);
-		
+		HttpClient httpClient = new HttpClient();
+
+		HttpResponse world = httpClient.executePost("accessToken","url","path", "hello".getBytes(), true);
+
 		Assert.assertNotNull(world);
-		Assert.assertEquals("world", world);
+		Assert.assertEquals("world", world.getResponseBody());
 	}
 }

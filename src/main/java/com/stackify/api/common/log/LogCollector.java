@@ -15,158 +15,209 @@
  */
 package com.stackify.api.common.log;
 
+import com.stackify.api.LogMsg;
+import com.stackify.api.LogMsgGroup;
+import com.stackify.api.common.ApiConfiguration;
+import com.stackify.api.common.collect.SynchronizedEvictingQueue;
+import com.stackify.api.common.lang.Threads;
+import com.stackify.api.common.oauth.OAuth2Service;
+import com.stackify.api.common.oauth.OAuth2Token;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-
-import com.stackify.api.AppIdentity;
-import com.stackify.api.EnvironmentDetail;
-import com.stackify.api.LogMsg;
-import com.stackify.api.LogMsgGroup;
-import com.stackify.api.common.AppIdentityService;
-import com.stackify.api.common.collect.SynchronizedEvictingQueue;
-import com.stackify.api.common.http.HttpException;
-import com.stackify.api.common.util.Preconditions;
+import java.util.concurrent.TimeUnit;
 
 /**
  * LogCollector
+ *
  * @author Eric Martin
  */
+@Slf4j
 public class LogCollector {
 
-	/**
-	 * Max batch size of log messages to be sent in a single request
-	 */
-	private static final int MAX_BATCH = 100;
+    /**
+     * Max batch size of log messages to be sent in a single request
+     */
+    private static final int MAX_BATCH = 100;
 
-	/**
-	 * The logger (project) name
-	 */
-	private final String logger;
+    /**
+     * Try posting message 3 times before skipping it
+     */
+    private static final int MAX_POST_ATTEMPTS = 3;
 
-	/**
-	 * Environment details
-	 */
-	private final EnvironmentDetail envDetail;
+    /**
+     * Environment details
+     */
+    private final ApiConfiguration apiConfiguration;
 
-	/**
-	 * Application identity service
-	 */
-	private final AppIdentityService appIdentityService;
+    private final OAuth2Service oAuth2Service;
 
-	/**
-	 * The queue of objects to be transmitted
-	 */
-	private final Queue<LogMsg> queue = new SynchronizedEvictingQueue<LogMsg>(10000);
-	
-	/**
-	 * Constructor
-	 * @param logger The logger (project) name
-	 * @param envDetail Environment details
-	 */
-	public LogCollector(final String logger, final EnvironmentDetail envDetail, final AppIdentityService appIdentityService) {
-		Preconditions.checkNotNull(logger);
-		Preconditions.checkNotNull(envDetail);
-		Preconditions.checkNotNull(appIdentityService);
+    private final String apiClientName;
 
-		this.logger = logger;
-		this.envDetail = envDetail;
-		this.appIdentityService = appIdentityService;
-	}
+    /**
+     * The queue of objects to be transmitted
+     */
+    private final Queue<LogMsg> queue = new SynchronizedEvictingQueue<LogMsg>(10000);
 
-	/**
-	 * Queues logMsg to be sent
-	 * @param logMsg The log message
-	 */
-	public void addLogMsg(final LogMsg logMsg) {
-		Preconditions.checkNotNull(logMsg);
-		queue.offer(logMsg);
-	}
+    final Queue<RetryQueueItem<LogMsgGroup>> retryQueue = new SynchronizedEvictingQueue<RetryQueueItem<LogMsgGroup>>(20);
 
-	/**
-	 * Flushes the queue by sending all messages to Stackify
-	 * @param sender The LogMsgGroup sender
-	 * @return The number of messages sent to Stackify
-	 * @throws IOException
-	 * @throws HttpException
-	 */
-	public int flush(final LogSender sender) throws IOException, HttpException {
+    /**
+     * Constructor
+     *
+     * @param apiClientName    API Client Name
+     * @param apiConfiguration API Configuration
+     * @param oAuth2Service    OAuth Service
+     */
+    public LogCollector(@NonNull final String apiClientName,
+                        @NonNull final ApiConfiguration apiConfiguration,
+                        @NonNull final OAuth2Service oAuth2Service) {
+        this.apiClientName = apiClientName;
+        this.apiConfiguration = apiConfiguration;
+        this.oAuth2Service = oAuth2Service;
+    }
 
-		int numSent = 0;
-		int maxToSend = queue.size();
+    /**
+     * Queues logMsg to be sent
+     *
+     * @param logMsg The log message
+     */
+    public void addLogMsg(@NonNull final LogMsg logMsg) {
+        queue.offer(logMsg);
+    }
 
-		if (0 < maxToSend) {
-			AppIdentity appIdentity = appIdentityService.getAppIdentity();
+    /**
+     * Flushes the queue by sending all messages to Stackify
+     *
+     * @param sender The LogMsgGroup sender
+     * @return The number of messages sent to Stackify
+     */
+    public int flush(final LogSender sender) throws IOException {
 
-			while (numSent < maxToSend) {
+        int numSent = 0;
+        int maxToSend = queue.size();
 
-				// get the next batch of messages
-				int batchSize = Math.min(maxToSend - numSent, MAX_BATCH);
+        if (0 < maxToSend) {
 
-				List<LogMsg> batch = new ArrayList<LogMsg>(batchSize);
+            while (numSent < maxToSend) {
 
-				for (int i = 0; i < batchSize; ++i) {
-					batch.add(queue.remove());
-				}
+                // get the next batch of messages
+                int batchSize = Math.min(maxToSend - numSent, MAX_BATCH);
 
-				// build the log message group
-				LogMsgGroup group = createLogMessageGroup(batch, logger, envDetail, appIdentity);
+                List<LogMsg> batch = new ArrayList<LogMsg>(batchSize);
 
-				// send the batch to Stackify
-				int httpStatus = sender.send(group);
+                for (int i = 0; i < batchSize; ++i) {
+                    batch.add(queue.remove());
+                }
 
-				// if the batch failed to transmit, return the appropriate transmission status
-				if (httpStatus != HttpURLConnection.HTTP_OK) {
-					throw new HttpException(httpStatus);
-				}
+                LogMsgGroup group = LogMsgGroup.newBuilder()
+                        .msgs(batch)
+                        .environmentDetail(apiConfiguration.getEnvDetail())
+                        .apiClientName(apiClientName)
+                        .build();
 
-				// next iteration
-				numSent += batchSize;
-			}
-		}
+                boolean success = false;
+                try {
 
-		return numSent;
-	}
+                    // get access token
+                    OAuth2Token oAuth2Token = oAuth2Service.getAccessToken(apiConfiguration.getEnvDetail());
 
-	/**
-	 *
-	 * @param batch - a bunch of messages that should be sent over the wire
-	 * @param logger - logger (project) name
-	 * @param envDetail - environment details
-	 * @param appIdentity - application identity
-	 * @return LogMessage group object with
-	 */
-	private LogMsgGroup createLogMessageGroup (
-		final List<LogMsg> batch, final String logger, final EnvironmentDetail envDetail, final AppIdentity appIdentity
-	) {
-		final LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
+                    if (oAuth2Token != null) {
+                        group.setAccessToken(oAuth2Token.getAccessToken());
+                    } else {
+                        throw new Exception("Unable to retrieve auth token.");
+                    }
 
-		groupBuilder
-			.platform("java")
-			.logger(logger)
-			.serverName(envDetail.getDeviceName())
-			.env(envDetail.getConfiguredEnvironmentName())
-			.appName(envDetail.getConfiguredAppName())
-			.appLoc(envDetail.getAppLocation());
+                    success = sender.send(group);
 
-		if (appIdentity != null) {
-			groupBuilder
-				.cdId(appIdentity.getDeviceId())
-				.cdAppId(appIdentity.getDeviceAppId())
-				.appNameId(appIdentity.getAppNameId())
-				.appEnvId(appIdentity.getAppEnvId())
-				.envId(appIdentity.getEnvId())
-				.env(appIdentity.getEnv());
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
 
-			if ((appIdentity.getAppName() != null) && (0 < appIdentity.getAppName().length())) {
-				groupBuilder.appName(appIdentity.getAppName());
-			}
-		}
+                // add to retry queue on failure
+                if (!success) {
+                    retryQueue.offer(new RetryQueueItem<LogMsgGroup>(group));
+                }
 
-		groupBuilder.msgs(batch);
+                // next iteration
+                numSent += batchSize;
+            }
+        }
 
-		return groupBuilder.build();
-	}
+        return numSent;
+    }
+
+    public void flushRetries(final LogSender sender) {
+
+        if (!retryQueue.isEmpty()) {
+
+            // queued items are available for retransmission
+
+            // drain resend queue or 1st exception
+
+            try {
+
+                while (!retryQueue.isEmpty()) {
+
+                    // get next item off queue
+
+                    RetryQueueItem<LogMsgGroup> item = retryQueue.poll();
+
+                    if (item != null) {
+
+                        // add to retry queue on failure
+
+                        LogMsgGroup logMsgGroup = item.getObject();
+
+                        try {
+
+                            // set new oauth token
+                            OAuth2Token oAuth2Token = oAuth2Service.getAccessToken(apiConfiguration.getEnvDetail());
+                            logMsgGroup.setAccessToken(oAuth2Token.getAccessToken());
+
+                            sender.send(logMsgGroup);
+
+                            Threads.sleepQuietly(250, TimeUnit.MILLISECONDS);
+
+                        } catch (Throwable e) {
+
+                            item.incrementRetryCount();
+
+                            if (MAX_POST_ATTEMPTS > item.getRetryCount()) {
+                                retryQueue.offer(item);
+                            }
+
+                            throw e;
+
+                        }
+                    }
+                }
+
+            } catch (Throwable t) {
+                System.err.println("Failure retransmitting queued requests");
+                t.printStackTrace();
+            }
+        }
+    }
+
+    @Getter
+    static class RetryQueueItem<T> {
+
+        private T object;
+        private int retryCount;
+
+        public RetryQueueItem(T object) {
+            this.object = object;
+        }
+
+        public void incrementRetryCount() {
+            this.retryCount++;
+        }
+
+    }
+
 }

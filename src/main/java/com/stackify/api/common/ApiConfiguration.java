@@ -16,204 +16,70 @@
 package com.stackify.api.common;
 
 import com.stackify.api.EnvironmentDetail;
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * ApiConfiguration
+ *
  * @author Eric Martin
  */
+@Data
+@Builder(builderClassName = "Builder", builderMethodName = "newBuilder", toBuilder = true)
 public class ApiConfiguration {
 
-	/**
-	 * Default API URL
-	 */
-	private static final String DEFAULT_API_URL = "https://api.stackify.com";
+    /**
+     * Default API URL
+     */
+    private static final String DEFAULT_API_URL = "https://api.stackify.com";
 
-	/**
-	 * API URL
-	 */
-	private final String apiUrl;
+    /**
+     * Default AUTH URL
+     */
+    private static final String DEFAULT_AUTH_URL = "https://auth.stackify.net";
 
-	/**
-	 * API Key
-	 */
-	private final String apiKey;
+    /**
+     * API URL
+     */
+    private final String apiUrl;
 
-	/**
-	 * Application name
-	 */
-	private final String application;
+    /**
+     * Auth API URL
+     */
+    private final String authUrl;
 
-	/**
-	 * Environment
-	 */
-	private final String environment;
+    /**
+     * API Key
+     */
+    private final String apiKey;
 
-	/**
-	 * Environment details
-	 */
-	private final EnvironmentDetail envDetail;
+    /**
+     * Application name
+     */
+    private final String application;
 
-	/**
-	 * @return the apiUrl
-	 */
-	public String getApiUrl() {
-		return apiUrl != null ? apiUrl : DEFAULT_API_URL;
-	}
+    /**
+     * Environment
+     */
+    private final String environment;
 
-	/**
-	 * @return the apiKey
-	 */
-	public String getApiKey() {
-		return apiKey;
-	}
+    /**
+     * Environment details
+     */
+    private final EnvironmentDetail envDetail;
 
-	/**
-	 * @return the application
-	 */
-	public String getApplication() {
-		return application;
-	}
+    /**
+     * @return the apiUrl
+     */
+    public String getApiUrl() {
+        return apiUrl != null ? apiUrl : DEFAULT_API_URL;
+    }
 
-	/**
-	 * @return the environment
-	 */
-	public String getEnvironment() {
-		return environment;
-	}
+    /**
+     * @return the authUrl
+     */
+    public String getAuthUrl() {
+        return authUrl != null ? authUrl : DEFAULT_AUTH_URL;
+    }
 
-	/**
-	 * @return the envDetail
-	 */
-	public EnvironmentDetail getEnvDetail() {
-		return envDetail;
-	}
-
-	/**
-	 * @param builder The Builder object that contains all of the values for initialization
-	 */
-	private ApiConfiguration(final Builder builder) {
-		this.apiUrl = builder.apiUrl;
-		this.apiKey = builder.apiKey;
-		this.application = builder.application;
-		this.environment = builder.environment;
-		this.envDetail = builder.envDetail;
-	}
-
-	/**
-	 * @return A new instance of the Builder
-	 */
-	public static Builder newBuilder() {
-	    return new Builder();
-	}
-
-
-	/**
-	 * @return a Builder object based on current instance
-	 */
-	public Builder toBuilder() {
-		return newBuilder()
-				.apiUrl(apiUrl)
-				.apiKey(apiKey)
-				.application(application)
-				.environment(environment)
-				.envDetail(envDetail);
-	}
-
-	/**
-	 * ApiConfiguration.Builder separates the construction of a ApiConfiguration from its representation
-	 */
-	public static class Builder {
-
-		/**
-		 * The builder's apiUrl
-		 */
-		private String apiUrl;
-
-		/**
-		 * The builder's apiKey
-		 */
-		private String apiKey;
-
-		/**
-		 * The builder's application
-		 */
-		private String application;
-
-		/**
-		 * The builder's environment
-		 */
-		private String environment;
-
-		/**
-		 * The builder's envDetail
-		 */
-		private EnvironmentDetail envDetail;
-
-		/**
-		 * Sets the builder's apiUrl
-		 * @param apiUrl The apiUrl to be set
-		 * @return Reference to the current object
-		 */
-		public Builder apiUrl(final String apiUrl) {
-			this.apiUrl = apiUrl;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's apiKey
-		 * @param apiKey The apiKey to be set
-		 * @return Reference to the current object
-		 */
-		public Builder apiKey(final String apiKey) {
-			this.apiKey = apiKey;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's application
-		 * @param application The application to be set
-		 * @return Reference to the current object
-		 */
-		public Builder application(final String application) {
-			this.application = application;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's environment
-		 * @param environment The environment to be set
-		 * @return Reference to the current object
-		 */
-		public Builder environment(final String environment) {
-			this.environment = environment;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's envDetail
-		 * @param envDetail The envDetail to be set
-		 * @return Reference to the current object
-		 */
-		public Builder envDetail(final EnvironmentDetail envDetail) {
-			this.envDetail = envDetail;
-			return this;
-		}
-
-		/**
-		 * @return A new object constructed from this builder
-		 */
-		public ApiConfiguration build() {
-			return new ApiConfiguration(this);
-		}
-	}
-
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "ApiConfiguration [apiUrl=" + apiUrl + ", apiKey=" + apiKey
-				+ ", application=" + application + ", environment="
-				+ environment + ", envDetail=" + envDetail + "]";
-	}
 }
