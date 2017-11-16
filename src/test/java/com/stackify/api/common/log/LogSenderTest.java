@@ -38,17 +38,17 @@ public class LogSenderTest {
 	
 	/**
 	 * testSend
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	@Test
 	public void testSend() throws Exception {
 		ObjectMapper objectMapper = Mockito.mock(ObjectMapper.class);
 		Masker masker = Mockito.mock(Masker.class);
 		Mockito.when(objectMapper.writer()).thenReturn(Mockito.mock(ObjectWriter.class));
-		
+
 		ApiConfiguration apiConfig = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").build();
 
-		LogSender sender = new LogSender(apiConfig, objectMapper, masker);
+		LogSender sender = new LogSender(apiConfig, objectMapper, masker, true);
 
 		HttpClient httpClient = PowerMockito.mock(HttpClient.class);
 		PowerMockito.whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);

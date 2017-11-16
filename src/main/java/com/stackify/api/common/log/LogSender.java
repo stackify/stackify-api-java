@@ -25,6 +25,7 @@ import com.stackify.api.common.http.HttpException;
 import com.stackify.api.common.http.HttpResendQueue;
 import com.stackify.api.common.mask.Masker;
 import com.stackify.api.common.util.Preconditions;
+import com.stackify.api.common.util.SkipJsonUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,25 @@ public class LogSender {
 
 	private final Masker masker;
 
+	private final boolean skipJson;
+
+	/**
+	 * Default constructor
+	 * @param apiConfig API configuration
+	 * @param objectMapper JSON object mapper
+	 * @param masker Message Masker
+	 * @param skipJson Messages detected w/ json will have the #SKIPJSON tag added
+	 */
+	public LogSender(@NonNull final ApiConfiguration apiConfig,
+					 @NonNull final ObjectMapper objectMapper,
+					 final Masker masker,
+					 final boolean skipJson) {
+		this.apiConfig = apiConfig;
+		this.objectMapper = objectMapper;
+		this.masker = masker;
+		this.skipJson = skipJson;
+	}
+
 	/**
 	 * Default constructor
 	 * @param apiConfig API configuration
@@ -76,20 +96,47 @@ public class LogSender {
 	public LogSender(@NonNull final ApiConfiguration apiConfig,
 					 @NonNull final ObjectMapper objectMapper,
 					 final Masker masker) {
-		this.apiConfig = apiConfig;
-		this.objectMapper = objectMapper;
-		this.masker = masker;
+		this(apiConfig, objectMapper, masker, false);
+	}
+
+	private void executeSkipJsonTag(final LogMsgGroup group) {
+		if (skipJson) {
+			if (group.getMsgs().size() > 0) {
+				for (LogMsg logMsg : group.getMsgs()) {
+					if (logMsg.getEx() != null) {
+						executeSkipJsonTag(logMsg.getEx().getError());
+					}
+					logMsg.setData(SkipJsonUtil.execute(logMsg.getData()));
+					logMsg.setMsg(SkipJsonUtil.execute(logMsg.getMsg()));
+				}
+			}
+
+		}
+	}
+
+	private void executeSkipJsonTag(final ErrorItem errorItem) {
+		if (skipJson) {
+			if (errorItem != null) {
+				errorItem.setMessage(SkipJsonUtil.execute(errorItem.getMessage()));
+				if (errorItem.getData() != null) {
+					for (Map.Entry<String, String> entry : errorItem.getData().entrySet()) {
+						entry.setValue(SkipJsonUtil.execute(entry.getValue()));
+					}
+				}
+				executeSkipJsonTag(errorItem.getInnerError());
+			}
+		}
 	}
 
 	/**
 	 * Applies masking to passed in LogMsgGroup.
 	 */
-	private void mask(final LogMsgGroup group) {
+	private void executeMask(final LogMsgGroup group) {
 		if (masker != null) {
 			if (group.getMsgs().size() > 0) {
 				for (LogMsg logMsg : group.getMsgs()) {
 					if (logMsg.getEx() != null) {
-						mask(logMsg.getEx().getError());
+						executeMask(logMsg.getEx().getError());
 					}
 					logMsg.setData(masker.mask(logMsg.getData()));
 					logMsg.setMsg(masker.mask(logMsg.getMsg()));
@@ -98,7 +145,7 @@ public class LogSender {
 		}
 	}
 
-	private void mask(final ErrorItem errorItem) {
+	private void executeMask(final ErrorItem errorItem) {
         if (errorItem != null) {
             errorItem.setMessage(masker.mask(errorItem.getMessage()));
             if (errorItem.getData() != null) {
@@ -106,7 +153,7 @@ public class LogSender {
                     entry.setValue(masker.mask(entry.getValue()));
                 }
             }
-            mask(errorItem.getInnerError());
+            executeMask(errorItem.getInnerError());
         }
 	}
 
@@ -119,7 +166,8 @@ public class LogSender {
 	public int send(final LogMsgGroup group) throws IOException {
 		Preconditions.checkNotNull(group);
 
-		mask(group);
+		executeMask(group);
+		executeSkipJsonTag(group);
 
 		HttpClient httpClient = new HttpClient(apiConfig);
 
