@@ -49,7 +49,7 @@ public class ApiConfigurations {
 		String mergedApiKey = ((apiKey != null) && (0 < apiKey.length())) ? apiKey : props.getApiKey();
 		String mergedApplication = ((application != null) && (0 < application.length())) ? application : props.getApplication();
 		String mergedEnvironment = ((environment != null) && (0 < environment.length())) ? environment : props.getEnvironment();
-		
+
 		ApiConfiguration.Builder builder = ApiConfiguration.newBuilder();
 		builder.apiUrl(mergedApiUrl);
 		builder.apiKey(mergedApiKey);
@@ -91,12 +91,14 @@ public class ApiConfigurations {
 					String apiKey = confProps.getProperty("stackify.apiKey");
 					String application = confProps.getProperty("stackify.application");
 					String environment = confProps.getProperty("stackify.environment");
-					
+					Boolean skipJson =  Boolean.parseBoolean(confProps.getProperty("stackify.skipJson", "false"));
+
 					builder.apiUrl(apiUrl);
 					builder.apiKey(apiKey);
 					builder.application(application);
 					builder.environment(environment);
 					builder.envDetail(EnvironmentDetails.getEnvironmentDetail(application, environment));
+					builder.skipJson(skipJson);
 				}
 			}
 		} catch (Throwable t) {

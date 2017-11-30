@@ -16,11 +16,17 @@
 package com.stackify.api.common;
 
 import com.stackify.api.EnvironmentDetail;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
  * ApiConfiguration
  * @author Eric Martin
  */
+@ToString
+@Getter
+@Builder(builderClassName = "Builder", toBuilder = true, builderMethodName = "newBuilder")
 public class ApiConfiguration {
 
 	/**
@@ -54,166 +60,15 @@ public class ApiConfiguration {
 	private final EnvironmentDetail envDetail;
 
 	/**
+	 * Add #SKIPJSON tag to messages containing Json
+	 */
+	private final Boolean skipJson;
+
+	/**
 	 * @return the apiUrl
 	 */
 	public String getApiUrl() {
 		return apiUrl != null ? apiUrl : DEFAULT_API_URL;
 	}
-
-	/**
-	 * @return the apiKey
-	 */
-	public String getApiKey() {
-		return apiKey;
-	}
-
-	/**
-	 * @return the application
-	 */
-	public String getApplication() {
-		return application;
-	}
-
-	/**
-	 * @return the environment
-	 */
-	public String getEnvironment() {
-		return environment;
-	}
-
-	/**
-	 * @return the envDetail
-	 */
-	public EnvironmentDetail getEnvDetail() {
-		return envDetail;
-	}
-
-	/**
-	 * @param builder The Builder object that contains all of the values for initialization
-	 */
-	private ApiConfiguration(final Builder builder) {
-		this.apiUrl = builder.apiUrl;
-		this.apiKey = builder.apiKey;
-		this.application = builder.application;
-		this.environment = builder.environment;
-		this.envDetail = builder.envDetail;
-	}
-
-	/**
-	 * @return A new instance of the Builder
-	 */
-	public static Builder newBuilder() {
-	    return new Builder();
-	}
-
-
-	/**
-	 * @return a Builder object based on current instance
-	 */
-	public Builder toBuilder() {
-		return newBuilder()
-				.apiUrl(apiUrl)
-				.apiKey(apiKey)
-				.application(application)
-				.environment(environment)
-				.envDetail(envDetail);
-	}
-
-	/**
-	 * ApiConfiguration.Builder separates the construction of a ApiConfiguration from its representation
-	 */
-	public static class Builder {
-
-		/**
-		 * The builder's apiUrl
-		 */
-		private String apiUrl;
-
-		/**
-		 * The builder's apiKey
-		 */
-		private String apiKey;
-
-		/**
-		 * The builder's application
-		 */
-		private String application;
-
-		/**
-		 * The builder's environment
-		 */
-		private String environment;
-
-		/**
-		 * The builder's envDetail
-		 */
-		private EnvironmentDetail envDetail;
-
-		/**
-		 * Sets the builder's apiUrl
-		 * @param apiUrl The apiUrl to be set
-		 * @return Reference to the current object
-		 */
-		public Builder apiUrl(final String apiUrl) {
-			this.apiUrl = apiUrl;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's apiKey
-		 * @param apiKey The apiKey to be set
-		 * @return Reference to the current object
-		 */
-		public Builder apiKey(final String apiKey) {
-			this.apiKey = apiKey;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's application
-		 * @param application The application to be set
-		 * @return Reference to the current object
-		 */
-		public Builder application(final String application) {
-			this.application = application;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's environment
-		 * @param environment The environment to be set
-		 * @return Reference to the current object
-		 */
-		public Builder environment(final String environment) {
-			this.environment = environment;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's envDetail
-		 * @param envDetail The envDetail to be set
-		 * @return Reference to the current object
-		 */
-		public Builder envDetail(final EnvironmentDetail envDetail) {
-			this.envDetail = envDetail;
-			return this;
-		}
-
-		/**
-		 * @return A new object constructed from this builder
-		 */
-		public ApiConfiguration build() {
-			return new ApiConfiguration(this);
-		}
-	}
-
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "ApiConfiguration [apiUrl=" + apiUrl + ", apiKey=" + apiKey
-				+ ", application=" + application + ", environment="
-				+ environment + ", envDetail=" + envDetail + "]";
-	}
+	
 }

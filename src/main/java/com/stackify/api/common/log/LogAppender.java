@@ -66,6 +66,22 @@ public class LogAppender<T> implements Closeable {
  
 	private final Masker masker;
 
+	private final boolean skipJson;
+
+	/**
+	 * Constructor
+	 * @param logger Logger project name
+	 */
+	public LogAppender(@NonNull final String logger,
+					   @NonNull final EventAdapter<T> eventAdapter,
+					   final Masker masker,
+					   final boolean skipJson) {
+		this.logger = logger;
+		this.eventAdapter = eventAdapter;
+		this.masker = masker;
+		this.skipJson = skipJson;
+	}
+
 	/**
 	 * Constructor
 	 * @param logger Logger project name
@@ -73,9 +89,7 @@ public class LogAppender<T> implements Closeable {
 	public LogAppender(@NonNull final String logger,
 					   @NonNull final EventAdapter<T> eventAdapter,
 					   final Masker masker) {
-		this.logger = logger;
-		this.eventAdapter = eventAdapter;
-		this.masker = masker;
+		this(logger, eventAdapter, masker, false);
 	}
 
 	/**
@@ -101,7 +115,7 @@ public class LogAppender<T> implements Closeable {
 
 		this.collector = new LogCollector(logger, apiConfig.getEnvDetail(), appIdentityService);
 
-		LogSender sender = new LogSender(apiConfig, objectMapper, this.masker);
+		LogSender sender = new LogSender(apiConfig, objectMapper, this.masker, this.skipJson);
 
 		// build the background service to asynchronously post errors to Stackify
 		// startup the background service
