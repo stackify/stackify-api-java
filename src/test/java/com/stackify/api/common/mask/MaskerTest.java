@@ -73,6 +73,54 @@ public class MaskerTest {
         Assert.assertEquals("IPV4 Multiple No Match", "a 3a3.44b.45.256 b 452.33.25 c", masker.mask("a 3a3.44b.45.256 b 452.33.25 c"));
     }
 
+    @Test
+    public void maskUUID() {
+
+        Masker masker = new Masker();
+        masker.addMask(Masker.MASK_UUID);
+
+        Assert.assertEquals("************************************", masker.mask("76e0571d-f758-49a8-b5e7-27e1ed34391c"));
+        Assert.assertEquals("a ************************************ c", masker.mask("a 76e0571d-f758-49a8-b5e7-27e1ed34391c c"));
+        Assert.assertEquals("{guid}", masker.mask("76e0571d-f758-49a8-b5e7-27e1ed34391c", "{guid}"));
+        Assert.assertEquals("a {guid} c", masker.mask("a 76e0571d-f758-49a8-b5e7-27e1ed34391c c", "{guid}"));
+    }
+
+    @Test
+    public void maskNumeric() {
+
+        Masker masker = new Masker();
+        masker.addMask(Masker.MASK_NUMERIC);
+
+        Assert.assertEquals("***", masker.mask("123"));
+        Assert.assertEquals("a***c", masker.mask("a123c"));
+        Assert.assertEquals("abc", masker.mask("abc"));
+        Assert.assertEquals("{id}", masker.mask("123", "{id}"));
+        Assert.assertEquals("a{id}c", masker.mask("a123c", "{id}"));
+    }
+
+
+    @Test
+    public void maskEmail() {
+
+        Masker masker = new Masker();
+        masker.addMask(Masker.MASK_EMAIL);
+
+        Assert.assertEquals("*****************", masker.mask("email@example.com"));
+        Assert.assertEquals("******************************", masker.mask("firstname.lastname@example.com"));
+        Assert.assertEquals("***************************", masker.mask("email@subdomain.example.com"));
+        Assert.assertEquals("******************************", masker.mask("firstname+lastname@example.com"));
+        Assert.assertEquals("**********************", masker.mask("1234567890@example.com"));
+        Assert.assertEquals("********************", masker.mask("email@example.museum"));
+        Assert.assertEquals("******************************", masker.mask("firstname-lastname@example.com"));
+        Assert.assertEquals("{email}", masker.mask("firstname-lastname@example.com", "{email}"));
+        Assert.assertEquals("[{email}]", masker.mask("[firstname-lastname@example.com]", "{email}"));
+        Assert.assertEquals("a {email} c", masker.mask("a firstname-lastname@example.com c", "{email}"));
+
+        Assert.assertEquals("@example.com", masker.mask("@example.com"));
+        Assert.assertEquals("email.example.com", masker.mask("email.example.com"));
+        Assert.assertEquals("email@example", masker.mask("email@example"));
+
+    }
 
     @Test
     public void maskPerformance() {
