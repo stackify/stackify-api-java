@@ -29,6 +29,7 @@ import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.collect.SynchronizedEvictingQueue;
 import com.stackify.api.common.http.HttpException;
 import com.stackify.api.common.util.Preconditions;
+import lombok.NonNull;
 
 /**
  * LogCollector
@@ -41,10 +42,17 @@ public class LogCollector {
 	 */
 	private static final int MAX_BATCH = 100;
 
+	private static final String DEFAULT_PLATFORM = "java";
+
 	/**
 	 * The logger (project) name
 	 */
 	private final String logger;
+
+	/**
+	 * The logger platform (log type)
+	 */
+	private final String platform;
 
 	/**
 	 * Environment details
@@ -60,20 +68,34 @@ public class LogCollector {
 	 * The queue of objects to be transmitted
 	 */
 	private final Queue<LogMsg> queue = new SynchronizedEvictingQueue<LogMsg>(10000);
-	
+
 	/**
 	 * Constructor
-	 * @param logger The logger (project) name
+	 *
+	 * @param platform  Logger platform (log type)
+	 * @param logger    The logger (project) name
 	 * @param envDetail Environment details
 	 */
-	public LogCollector(final String logger, final EnvironmentDetail envDetail, final AppIdentityService appIdentityService) {
-		Preconditions.checkNotNull(logger);
-		Preconditions.checkNotNull(envDetail);
-		Preconditions.checkNotNull(appIdentityService);
-
+	public LogCollector(@NonNull final String platform,
+						@NonNull final String logger,
+						@NonNull final EnvironmentDetail envDetail,
+						@NonNull final AppIdentityService appIdentityService) {
+		this.platform = platform;
 		this.logger = logger;
 		this.envDetail = envDetail;
 		this.appIdentityService = appIdentityService;
+	}
+
+	/**
+	 * Constructor
+	 *
+	 * @param logger    The logger (project) name
+	 * @param envDetail Environment details
+	 */
+	public LogCollector(final String logger,
+						final EnvironmentDetail envDetail,
+						final AppIdentityService appIdentityService) {
+		this(DEFAULT_PLATFORM, logger, envDetail, appIdentityService);
 	}
 
 	/**
@@ -112,7 +134,7 @@ public class LogCollector {
 				}
 
 				// build the log message group
-				LogMsgGroup group = createLogMessageGroup(batch, logger, envDetail, appIdentity);
+				LogMsgGroup group = createLogMessageGroup(batch, platform, logger, envDetail, appIdentity);
 
 				// send the batch to Stackify
 				int httpStatus = sender.send(group);
@@ -133,32 +155,35 @@ public class LogCollector {
 	/**
 	 *
 	 * @param batch - a bunch of messages that should be sent over the wire
+	 * @param platform - platform (log type)
 	 * @param logger - logger (project) name
 	 * @param envDetail - environment details
 	 * @param appIdentity - application identity
 	 * @return LogMessage group object with
 	 */
-	private LogMsgGroup createLogMessageGroup (
-		final List<LogMsg> batch, final String logger, final EnvironmentDetail envDetail, final AppIdentity appIdentity
-	) {
+	private LogMsgGroup createLogMessageGroup(final List<LogMsg> batch,
+											  final String platform,
+											  final String logger,
+											  final EnvironmentDetail envDetail,
+											  final AppIdentity appIdentity) {
 		final LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
 
 		groupBuilder
-			.platform("java")
-			.logger(logger)
-			.serverName(envDetail.getDeviceName())
-			.env(envDetail.getConfiguredEnvironmentName())
-			.appName(envDetail.getConfiguredAppName())
-			.appLoc(envDetail.getAppLocation());
+				.platform(platform)
+				.logger(logger)
+				.serverName(envDetail.getDeviceName())
+				.env(envDetail.getConfiguredEnvironmentName())
+				.appName(envDetail.getConfiguredAppName())
+				.appLoc(envDetail.getAppLocation());
 
 		if (appIdentity != null) {
 			groupBuilder
-				.cdId(appIdentity.getDeviceId())
-				.cdAppId(appIdentity.getDeviceAppId())
-				.appNameId(appIdentity.getAppNameId())
-				.appEnvId(appIdentity.getAppEnvId())
-				.envId(appIdentity.getEnvId())
-				.env(appIdentity.getEnv());
+					.cdId(appIdentity.getDeviceId())
+					.cdAppId(appIdentity.getDeviceAppId())
+					.appNameId(appIdentity.getAppNameId())
+					.appEnvId(appIdentity.getAppEnvId())
+					.envId(appIdentity.getEnvId())
+					.env(appIdentity.getEnv());
 
 			if ((appIdentity.getAppName() != null) && (0 < appIdentity.getAppName().length())) {
 				groupBuilder.appName(appIdentity.getAppName());
