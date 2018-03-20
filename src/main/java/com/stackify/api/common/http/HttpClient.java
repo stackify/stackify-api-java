@@ -60,15 +60,15 @@ public class HttpClient {
 	 * Constructor
 	 * @param apiConfig API configuration
 	 */
-	public HttpClient(final ApiConfiguration apiConfig) {
-		Preconditions.checkNotNull(apiConfig);
-		this.apiConfig = apiConfig;
+    public HttpClient(final ApiConfiguration apiConfig) {
+        Preconditions.checkNotNull(apiConfig);
+        this.apiConfig = apiConfig;
 
         if (apiConfig.getHttpProxyHost() != null &&
                 !apiConfig.getHttpProxyHost().isEmpty() &&
                 apiConfig.getHttpProxyPort() != null &&
                 !apiConfig.getHttpProxyPort().isEmpty()) {
-            this.proxy = HttpProxy.build(apiConfig.getHttpProxyHost(), Integer.parseInt(apiConfig.getHttpProxyPort()));
+            this.proxy = HttpProxy.build(apiConfig.getHttpProxyHost(), apiConfig.getHttpProxyPort());
         } else {
             this.proxy = HttpProxy.fromSystemProperties();
         }

@@ -15,7 +15,6 @@
  */
 package com.stackify.api.common.http;
 
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,26 +34,18 @@ public class HttpProxy {
      * @return Proxy from system settings
      */
     public static Proxy fromSystemProperties() {
-
-        try {
-            String proxyHost = System.getProperty("https.proxyHost");
-            String proxyPort = System.getProperty("https.proxyPort");
-
-            return build(proxyHost, Integer.parseInt(proxyPort));
-
-        } catch (Throwable t) {
-            log.info("Unable to read HTTP proxy information from system properties", t);
-        }
-
-        return Proxy.NO_PROXY;
+        return build(System.getProperty("https.proxyHost"), System.getProperty("https.proxyPort"));
     }
 
-    public static Proxy build(@NonNull final String httpProxyHost,
-                              @NonNull final int httpProxyPort) {
+    public static Proxy build(final String httpProxyHost,
+                              final String httpProxyPort) {
 
         try {
-            if (!httpProxyHost.isEmpty()) {
-                return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(httpProxyHost, httpProxyPort));
+            if (httpProxyHost != null &&
+                    !httpProxyHost.isEmpty() &&
+                    httpProxyPort != null &&
+                    !httpProxyPort.isEmpty()) {
+                return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(httpProxyHost, Integer.parseInt(httpProxyPort)));
             }
         } catch (Throwable t) {
             log.info("Unable to read HTTP proxy information from system properties", t);
