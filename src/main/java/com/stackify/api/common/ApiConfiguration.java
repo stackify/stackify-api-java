@@ -68,6 +68,16 @@ public class ApiConfiguration {
 	 * Allow logging from com.stackify.* 
 	 */
 	private final Boolean allowComDotStackify;
+
+	/**
+	 * Http Proxy Host ie) 10.20.30.40
+	 */
+	private final String httpProxyHost;
+
+	/**
+	 * Http Proxy Port ie) 8080
+	 */
+	private final String httpProxyPort;
 	
 	/**
 	 * @return the apiUrl

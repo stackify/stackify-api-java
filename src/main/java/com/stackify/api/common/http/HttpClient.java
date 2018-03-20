@@ -15,6 +15,10 @@
  */
 package com.stackify.api.common.http;
 
+import com.stackify.api.common.ApiConfiguration;
+import com.stackify.api.common.util.CharStreams;
+import com.stackify.api.common.util.Preconditions;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -26,10 +30,6 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.zip.GZIPOutputStream;
 
-import com.stackify.api.common.ApiConfiguration;
-import com.stackify.api.common.util.CharStreams;
-import com.stackify.api.common.util.Preconditions;
-
 /**
  * HttpClient
  * @author Eric Martin
@@ -40,32 +40,40 @@ public class HttpClient {
 	 * CONNECT_TIMEOUT
 	 */
 	private static final int CONNECT_TIMEOUT = 5000;
-	
+
 	/**
 	 * READ_TIMEOUT
 	 */
 	private static final int READ_TIMEOUT = 15000;
-	
+
 	/**
 	 * API configuration
 	 */
 	private final ApiConfiguration apiConfig;
-	
+
 	/**
 	 * HTTP proxy
 	 */
 	private final Proxy proxy;
-	
+
 	/**
 	 * Constructor
-	 * @param config API configuration
+	 * @param apiConfig API configuration
 	 */
 	public HttpClient(final ApiConfiguration apiConfig) {
 		Preconditions.checkNotNull(apiConfig);
 		this.apiConfig = apiConfig;
-		this.proxy = HttpProxy.fromSystemProperties();
-	}
-	
+
+        if (apiConfig.getHttpProxyHost() != null &&
+                !apiConfig.getHttpProxyHost().isEmpty() &&
+                apiConfig.getHttpProxyPort() != null &&
+                !apiConfig.getHttpProxyPort().isEmpty()) {
+            this.proxy = HttpProxy.build(apiConfig.getHttpProxyHost(), Integer.parseInt(apiConfig.getHttpProxyPort()));
+        } else {
+            this.proxy = HttpProxy.fromSystemProperties();
+        }
+    }
+
 	/**
 	 * Posts data to stackify
 	 * @param path REST path
@@ -77,7 +85,7 @@ public class HttpClient {
 	public String post(final String path, final byte[] jsonBytes) throws IOException, HttpException {
 		return post(path, jsonBytes, false);
 	}
-	
+
 	/**
 	 * Posts data to stackify
 	 * @param path REST path
@@ -92,76 +100,76 @@ public class HttpClient {
 		Preconditions.checkArgument(!path.isEmpty());
 		Preconditions.checkNotNull(jsonBytes);
 		Preconditions.checkArgument(0 < jsonBytes.length);
-		
+
 		HttpURLConnection connection = null;
-		
+
 		try {
 			URL url = new URL(apiConfig.getApiUrl() + path);
-			
+
 			// request properties
-			
+
 			connection = (HttpURLConnection) url.openConnection(proxy);
 			connection.setDoInput(true);
 			connection.setDoOutput(true);
 			connection.setRequestProperty("Content-Type", "application/json");
-			
+
 			if (gzip) {
 				connection.setRequestProperty("Content-Encoding", "gzip");
 			}
-			
+
 			connection.setRequestProperty("X-Stackify-Key", apiConfig.getApiKey());
 			connection.setRequestProperty("X-Stackify-PV", "V1");
 			connection.setRequestMethod("POST");
 			connection.setConnectTimeout(CONNECT_TIMEOUT);
 			connection.setReadTimeout(READ_TIMEOUT);
-			
+
 			// write the post body
-			
+
 			OutputStream stream = null;
-			
+
 			if (gzip) {
 				stream = new BufferedOutputStream(new GZIPOutputStream(connection.getOutputStream()));
 			} else {
 				stream = new BufferedOutputStream(connection.getOutputStream());
 			}
-						
+
 			stream.write(jsonBytes);
 			stream.flush();
 			stream.close();
-			
+
 			// read the response
-			
+
 			int statusCode = connection.getResponseCode();
-			
+
 			if (statusCode != HttpURLConnection.HTTP_OK) {
 				throw new HttpException(statusCode);
 			}
-			
+
 			return readAndClose(connection.getInputStream());
-			
+
 		} finally {
-			
+
 			if (connection != null) {
-				
+
 				// read and close the input stream
-				
+
 				try {
 					readAndClose(connection.getInputStream());
 				} catch (Throwable t) {
 					// do nothing
 				}
-				
+
 				// read and close the error stream
-				
+
 				try {
 					readAndClose(connection.getErrorStream());
 				} catch (Throwable t) {
 					// do nothing
 				}
-			}			
+			}
 		}
 	}
-	
+
 	/**
 	 * Reads all remaining contents from the stream and closes it
 	 * @param stream The stream
@@ -170,12 +178,12 @@ public class HttpClient {
 	 */
 	private String readAndClose(final InputStream stream) throws IOException {
 		String contents = null;
-		
+
 		if (stream != null) {
 			contents = CharStreams.toString(new InputStreamReader(new BufferedInputStream(stream), "UTF-8"));
 			stream.close();
 		}
-		
+
 		return contents;
 	}
 }

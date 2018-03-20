@@ -15,46 +15,52 @@
  */
 package com.stackify.api.common.http;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * HttpProxy
+ *
  * @author Eric Martin
  */
+@Slf4j
+@UtilityClass
 public class HttpProxy {
 
-	/**
-	 * The logger
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(HttpProxy.class);
+    /**
+     * @return Proxy from system settings
+     */
+    public static Proxy fromSystemProperties() {
 
-	/**
-	 * @return Proxy from system settings
-	 */
-	public static Proxy fromSystemProperties() {
-		try {			
-			String proxyHost = System.getProperty("https.proxyHost");
-			String proxyPort = System.getProperty("https.proxyPort");
-			
-			if ((proxyHost != null) && (!proxyHost.isEmpty())) {
-				if ((proxyPort != null) && (!proxyPort.isEmpty())) {
-					return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
-				}
-			}
-		} catch (Throwable t) {
-			LOGGER.info("Unable to read HTTP proxy information from system properties", t);
-		}
-		
-		return Proxy.NO_PROXY;
-	}
-	
-	/**
-	 * Hidden to prevent construction
-	 */
-	private HttpProxy() {
-	}
+        try {
+            String proxyHost = System.getProperty("https.proxyHost");
+            String proxyPort = System.getProperty("https.proxyPort");
+
+            return build(proxyHost, Integer.parseInt(proxyPort));
+
+        } catch (Throwable t) {
+            log.info("Unable to read HTTP proxy information from system properties", t);
+        }
+
+        return Proxy.NO_PROXY;
+    }
+
+    public static Proxy build(@NonNull final String httpProxyHost,
+                              @NonNull final int httpProxyPort) {
+
+        try {
+            if (!httpProxyHost.isEmpty()) {
+                return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(httpProxyHost, httpProxyPort));
+            }
+        } catch (Throwable t) {
+            log.info("Unable to read HTTP proxy information from system properties", t);
+        }
+
+        return Proxy.NO_PROXY;
+    }
+
 }

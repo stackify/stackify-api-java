@@ -101,12 +101,16 @@ public class ApiConfigurations {
 					if (confProps.containsKey("stackify.apiUrl")) {
 						apiUrl = confProps.getProperty("stackify.apiUrl");
 					}
-					
+
+					String httpProxyHost = confProps.getProperty("stackify.httpProxyHost");
+					String httpProxyPort = confProps.getProperty("stackify.httpProxyPort");
 					String apiKey = confProps.getProperty("stackify.apiKey");
 					String application = confProps.getProperty("stackify.application");
 					String environment = confProps.getProperty("stackify.environment");
 					Boolean skipJson =  Boolean.parseBoolean(confProps.getProperty("stackify.skipJson", "false"));
 
+					builder.httpProxyHost(httpProxyHost);
+					builder.httpProxyPort(httpProxyPort);
 					builder.apiUrl(apiUrl);
 					builder.apiKey(apiKey);
 					builder.application(application);
