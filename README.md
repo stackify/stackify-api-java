@@ -88,6 +88,35 @@ Be sure to shutdown the Direct Logger to flush this appender of any messages and
 LogManager.shutdown();
 ```
 
+### RUM Manual Instrumentation 
+
+Real User Monitoring (RUM) manual instrumentation allows you to specify where the RUM JavaScript block is injected. 
+
+It is recommended you provide a `stackify-api.properties` file in your application classpath with the following content: 
+
+````
+stackify.application=My Application Name
+stackify.environment=My Environment Name
+````
+
+Your application code will need to call out to the Stackify `com.stackify.apm.Stackify.getRUMJavaScriptBlock()` method in the `<head>` section as detailed below: 
+
+**JSP Example**
+  
+````
+<html>
+  <head> 
+        <%= com.stackify.apm.Stackify.getRUMJavaScriptBlock() %>
+        <script and link tags>
+    </head>
+    <body>
+    ... 
+    </body>
+</html>
+````
+
+
+
 ## License
 
 Copyright 2013 Stackify, LLC.
