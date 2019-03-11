@@ -21,22 +21,10 @@ import java.util.Map;
 public class MaskerConfiguration {
 
     public static Masker fromProperties() {
-
-        String propertiesFilePath = null;
-
-        URL confFileUrl = MaskerConfiguration.class.getResource("/stackify-api.properties");
-        if (confFileUrl != null) {
-            try {
-                propertiesFilePath = confFileUrl.toURI().getPath();
-            } catch (URISyntaxException e) {
-                log.warn(e.getMessage(), e);
-            }
-        }
-
-        return fromProperties(propertiesFilePath);
+        return fromProperties("/stackify-api.properties");
     }
 
-    public static Masker fromProperties(String propertiesFilePath) {
+    public static Masker fromProperties(String path) {
 
         Masker masker = new Masker();
 
@@ -46,9 +34,9 @@ public class MaskerConfiguration {
 
         try {
 
-            if (propertiesFilePath != null) {
+            if (path != null) {
 
-                Map<String, String> map = PropertyUtil.read(propertiesFilePath);
+                Map<String, String> map = PropertyUtil.read(path);
 
                 // masker defaults to disabled
                 if (!map.containsKey("stackify.log.mask.enabled") ||
@@ -79,7 +67,7 @@ public class MaskerConfiguration {
             }
 
         } catch (Throwable t) {
-            log.error("Exception reading " + propertiesFilePath + " configuration file", t);
+            log.error("Exception reading " + path + " configuration file", t);
         }
 
         return masker;

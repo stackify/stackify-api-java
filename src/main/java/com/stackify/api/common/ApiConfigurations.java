@@ -15,13 +15,11 @@
  */
 package com.stackify.api.common;
 
-import java.io.File;
-import java.io.FileReader;
-import java.net.URL;
-import java.util.Properties;
-
+import com.stackify.api.common.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * ApiConfigurations
@@ -45,7 +43,7 @@ public class ApiConfigurations {
 	public static ApiConfiguration fromPropertiesWithOverrides(final String apiUrl, final String apiKey, final String application, final String environment) {
 		return fromPropertiesWithOverrides(apiUrl, apiKey, application, environment, null);
 	}
-	
+
 	/**
 	 * Explicitly configure the API
 	 * @param apiUrl API URL
@@ -57,7 +55,7 @@ public class ApiConfigurations {
 	 */
 	public static ApiConfiguration fromPropertiesWithOverrides(final String apiUrl, final String apiKey, final String application, final String environment, final String allowComDotStackify) {
 		ApiConfiguration props = ApiConfigurations.fromProperties();
-		
+
 		String mergedApiUrl = ((apiUrl != null) && (0 < apiUrl.length())) ? apiUrl : props.getApiUrl();
 		String mergedApiKey = ((apiKey != null) && (0 < apiKey.length())) ? apiKey : props.getApiKey();
 		String mergedApplication = ((application != null) && (0 < application.length())) ? application : props.getApplication();
@@ -70,70 +68,54 @@ public class ApiConfigurations {
 		builder.environment(mergedEnvironment);
 		builder.envDetail(EnvironmentDetails.getEnvironmentDetail(mergedApplication, mergedEnvironment));
 		builder.allowComDotStackify(Boolean.valueOf(allowComDotStackify));
-		
+
 		return builder.build();
 	}
-	
+
 	/**
 	 * @return ApiConfiguration read from the stackify-api.properties file
 	 */
 	public static ApiConfiguration fromProperties() {
-		
+
 		ApiConfiguration.Builder builder = ApiConfiguration.newBuilder();
 
-		FileReader confFileReader = null;
-		
 		try {
-			URL confFileUrl = ApiConfigurations.class.getResource("/stackify-api.properties");
-			
-			if (confFileUrl != null) {
-				File confFile = new File(confFileUrl.toURI());
-							
-				if (confFile.exists()) {
-		
-					confFileReader = new FileReader(confFile);
-				
-					Properties confProps = new Properties();
-					confProps.load(confFileReader);
-					
-					String apiUrl = null;
-					
-					if (confProps.containsKey("stackify.apiUrl")) {
-						apiUrl = confProps.getProperty("stackify.apiUrl");
-					}
 
-					String httpProxyHost = confProps.getProperty("stackify.httpProxyHost");
-					String httpProxyPort = confProps.getProperty("stackify.httpProxyPort");
-					String apiKey = confProps.getProperty("stackify.apiKey");
-					String application = confProps.getProperty("stackify.application");
-					String environment = confProps.getProperty("stackify.environment");
-					Boolean skipJson =  Boolean.parseBoolean(confProps.getProperty("stackify.skipJson", "false"));
+			Map<String, String> properties = PropertyUtil.read("/stackify-api.properties");
 
-					builder.httpProxyHost(httpProxyHost);
-					builder.httpProxyPort(httpProxyPort);
-					builder.apiUrl(apiUrl);
-					builder.apiKey(apiKey);
-					builder.application(application);
-					builder.environment(environment);
-					builder.envDetail(EnvironmentDetails.getEnvironmentDetail(application, environment));
-					builder.skipJson(skipJson);
-				}
+			String apiUrl = null;
+
+			if (properties.containsKey("stackify.apiUrl")) {
+				apiUrl = properties.get("stackify.apiUrl");
 			}
+
+			String httpProxyHost = properties.get("stackify.httpProxyHost");
+			String httpProxyPort = properties.get("stackify.httpProxyPort");
+			String apiKey = properties.get("stackify.apiKey");
+			String application = properties.get("stackify.application");
+			String environment = properties.get("stackify.environment");
+
+			boolean skipJson = false;
+			if (properties.containsKey("stackify.skipJson")) {
+				skipJson = Boolean.parseBoolean(properties.get("stackify.skipJson"));
+			}
+
+			builder.httpProxyHost(httpProxyHost);
+			builder.httpProxyPort(httpProxyPort);
+			builder.apiUrl(apiUrl);
+			builder.apiKey(apiKey);
+			builder.application(application);
+			builder.environment(environment);
+			builder.envDetail(EnvironmentDetails.getEnvironmentDetail(application, environment));
+			builder.skipJson(skipJson);
+
 		} catch (Throwable t) {
 			LOGGER.error("Exception reading stackify-api.properties configuration file", t);
-		} finally {
-			if (confFileReader != null) {
-				try {
-					confFileReader.close();
-				} catch (Throwable t) {
-					LOGGER.info("Exception closing stackify-api.properties configuration file", t);
-				}
-			}
 		}
-		
+
 		return builder.build();
 	}
-	
+
 	/**
 	 * Hidden to prevent construction
 	 */
