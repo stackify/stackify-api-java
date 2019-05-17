@@ -19,6 +19,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -40,7 +41,7 @@ public abstract class BackgroundService
 	 * Executor service
 	 */
 	private ScheduledExecutorService executorService;
-	
+
 	/**
 	 * Next iteration
 	 */
@@ -56,7 +57,7 @@ public abstract class BackgroundService
 	 * @throws Exception
 	 */
 	protected abstract void startUp() throws Exception;
-	
+
 	/**
 	 * Run one iteration of the background service
 	 * @throws Exception
@@ -67,7 +68,7 @@ public abstract class BackgroundService
 	 * @return The next schedule delay (between iterations) in milliseconds
 	 */
 	protected abstract long getNextScheduleDelayMilliseconds();
-	
+
 	/**
 	 * Shut down the background service
 	 * @throws Exception
@@ -78,24 +79,32 @@ public abstract class BackgroundService
 	 * Start the background service/thread
 	 */
 	public void start() {
-		
+
 		lock.lock();
-		
+
 		try {
-			executorService = Executors.newSingleThreadScheduledExecutor();
-			
+			executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread thread = new Thread(r);
+                    thread.setName("StackifyLoggingBackgroundThread");
+                    thread.setDaemon(true);
+                    return thread;
+                }
+            });
+
 			try {
 				startUp();
 			} catch (Throwable t) {
 				LOGGER.info("Exception in service start up", t);
 			}
-			
+
 			currentFuture = executorService.schedule(new RunOneIterationAndReschedule(), 0, TimeUnit.MILLISECONDS);
 		} finally {
 			lock.unlock();
 		}
 	}
-	
+
 	/**
 	 * @return True if the background service is running, false otherwise
 	 */
@@ -105,26 +114,26 @@ public abstract class BackgroundService
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Stops the background service/thread
 	 */
 	public void stop() {
-		
+
 		lock.lock();
-		
+
 		try {
 			currentFuture.cancel(false);
-			
+
 			try {
 				shutDown();
 			} catch (Throwable t) {
 				LOGGER.info("Exception in service shut down", t);
 			}
-			
+
 			try {
 				executorService.shutdown();
 				executorService.awaitTermination(5, TimeUnit.SECONDS);
@@ -135,7 +144,7 @@ public abstract class BackgroundService
 			lock.unlock();
 		}
 	}
-	
+
 	/**
 	 * RunOneIterationAndReschedule
 	 */
@@ -146,11 +155,11 @@ public abstract class BackgroundService
 		 */
 		@Override
 		public Void call() throws Exception {
-			
+
 			// run one iteration
-			
+
 			lock.lock();
-			
+
 			try {
 				runOneIteration();
 			} catch (Throwable t) {
@@ -158,11 +167,11 @@ public abstract class BackgroundService
 			} finally {
 				lock.unlock();
 			}
-			
+
 			// reschedule
-			
+
 			lock.lock();
-			
+
 			try {
 				if (!currentFuture.isCancelled()) {
 					long nextDelay = getNextScheduleDelayMilliseconds();
@@ -173,7 +182,7 @@ public abstract class BackgroundService
 			} finally {
 				lock.unlock();
 			}
-			
+
 			// done
 
 			return null;
