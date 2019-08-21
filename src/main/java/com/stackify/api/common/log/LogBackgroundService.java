@@ -15,89 +15,71 @@
  */
 package com.stackify.api.common.log;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.stackify.api.common.concurrent.BackgroundService;
-import com.stackify.api.common.util.Preconditions;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * LogSenderService
  *
  * @author Eric Martin
  */
+@Slf4j
 public class LogBackgroundService extends BackgroundService {
 
-	/**
-	 * The service logger
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LogBackgroundService.class);
+    /**
+     * The scheduler that determines delay timing after errors
+     */
+    private final LogBackgroundServiceScheduler scheduler = new LogBackgroundServiceScheduler();
 
-	/**
-	 * The scheduler that determines delay timing after errors
-	 */
-	private final LogBackgroundServiceScheduler scheduler = new LogBackgroundServiceScheduler();
+    /**
+     * The LogMsg collector
+     */
+    private final LogCollector collector;
 
-	/**
-	 * The LogMsg collector
-	 */
-	private final LogCollector collector;
+    /**
+     * Handles sending logs to destination
+     */
+    private final LogTransport logTransport;
 
-	/**
-	 * The LogMsgGroup HTTP sender
-	 */
-	private final LogSender sender;
+    /**
+     * Constructor
+     *
+     * @param collector    The LogMsg collector
+     * @param logTransport Handles sending logs to destination
+     */
+    public LogBackgroundService(@NonNull final LogCollector collector,
+                                @NonNull final LogTransport logTransport) {
+        this.collector = collector;
+        this.logTransport = logTransport;
+    }
 
-	/**
-	 * Constructor
-	 * @param collector The LogMsg collector
-	 * @param sender The LogMsgGroup HTTP sender
-	 */
-	public LogBackgroundService(final LogCollector collector, final LogSender sender) {
-		Preconditions.checkNotNull(collector);
-		Preconditions.checkNotNull(sender);
-		this.collector = collector;
-		this.sender = sender;
-	}
+    @Override
+    protected void startUp() {
+    }
 
-	/**
-	 * @see com.stackify.api.common.concurrent.BackgroundService#startUp()
-	 */
-	@Override
-	protected void startUp() {
-	}
+    @Override
+    protected long getNextScheduleDelayMilliseconds() {
+        return scheduler.getScheduleDelay();
+    }
 
-	/**
-	 * @see com.stackify.api.common.concurrent.BackgroundService#getNextScheduleDelayMilliseconds()
-	 */
-	@Override
-	protected long getNextScheduleDelayMilliseconds() {
-		return scheduler.getScheduleDelay();
-	}
+    @Override
+    protected void runOneIteration() {
+        try {
+            int numSent = collector.flush(logTransport);
+            scheduler.update(numSent);
+        } catch (Throwable t) {
+            log.info("Exception running Stackify_LogBackgroundService", t);
+            scheduler.update(t);
+        }
+    }
 
-	/**
-	 * @see com.stackify.api.common.concurrent.BackgroundService#runOneIteration()
-	 */
-	@Override
-	protected void runOneIteration() {
-		try {
-			int numSent = collector.flush(sender);
-			scheduler.update(numSent);
-		} catch (Throwable t) {
-			LOGGER.info("Exception running Stackify_LogBackgroundService", t);
-			scheduler.update(t);
-		}
-	}
-
-	/**
-	 * @see com.stackify.api.common.concurrent.BackgroundService#shutDown()
-	 */
-	@Override
-	protected void shutDown() {
-		try {
-			collector.flush(sender);
-		} catch (Throwable t) {
-			LOGGER.info("Exception flushing log collector during shut down", t);
-		}
-	}
+    @Override
+    protected void shutDown() {
+        try {
+            collector.flush(logTransport);
+        } catch (Throwable t) {
+            log.info("Exception flushing log collector during shut down", t);
+        }
+    }
 }

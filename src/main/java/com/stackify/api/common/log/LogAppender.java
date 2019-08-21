@@ -30,165 +30,179 @@ import java.io.IOException;
 
 /**
  * LogAppender
+ *
  * @author Eric Martin
  */
 public class LogAppender<T> implements Closeable {
 
-	/**
-	 * Internal package prefix
-	 */
-	private static final String COM_DOT_STACKIFY = "com.stackify.";
-	
-	/**
-	 * Logger project name
-	 */
-	private final String logger;
+    /**
+     * Internal package prefix
+     */
+    private static final String COM_DOT_STACKIFY = "com.stackify.";
 
-	/**
-	 * Maps from specific log implementation events to our API
-	 */
-	private final EventAdapter<T> eventAdapter;
+    /**
+     * Logger project name
+     */
+    private final String logger;
 
-	/**
-	 * Collector for LogMsg objects that need to be sent to Stackify
-	 */
-	private LogCollector collector = null;
+    /**
+     * Maps from specific log implementation events to our API
+     */
+    private final EventAdapter<T> eventAdapter;
 
-	/**
-	 * Background thread for sending log events to Stackify
-	 */
-	private LogBackgroundService backgroundService = null;
+    /**
+     * Collector for LogMsg objects that need to be sent to Stackify
+     */
+    private LogCollector collector = null;
 
-	/**
-	 * Client side error governor to suppress duplicate errors
-	 */
-	private final ErrorGovernor errorGovernor = new ErrorGovernor();
- 
-	private final Masker masker;
+    /**
+     * Background thread for sending log events to Stackify
+     */
+    private LogBackgroundService backgroundService = null;
 
-	private final boolean skipJson;
+    /**
+     * Client side error governor to suppress duplicate errors
+     */
+    private final ErrorGovernor errorGovernor = new ErrorGovernor();
 
-	/**
-	 * Allow logging from com.stackify.* 
-	 */
-	private boolean allowComDotStackify = false;
+    private final Masker masker;
 
-	/**
-	 * Constructor
-	 * @param logger Logger project name
-	 */
-	public LogAppender(@NonNull final String logger,
-					   @NonNull final EventAdapter<T> eventAdapter,
-					   final Masker masker,
-					   final boolean skipJson) {
-		this.logger = logger;
-		this.eventAdapter = eventAdapter;
-		this.masker = masker;
-		this.skipJson = skipJson;
-	}
+    private final boolean skipJson;
 
-	/**
-	 * Constructor
-	 * @param logger Logger project name
-	 */
-	public LogAppender(@NonNull final String logger,
-					   @NonNull final EventAdapter<T> eventAdapter,
-					   final Masker masker) {
-		this(logger, eventAdapter, masker, false);
-	}
+    /**
+     * Allow logging from com.stackify.*
+     */
+    private boolean allowComDotStackify = false;
 
-	/**
-	 * Activates the appender
-	 * @param apiConfig API configuration
-	 */
-	public void activate(final ApiConfiguration apiConfig) {
-		Preconditions.checkNotNull(apiConfig);
-		Preconditions.checkNotNull(apiConfig.getApiUrl());
-		Preconditions.checkArgument(!apiConfig.getApiUrl().isEmpty());
-		Preconditions.checkNotNull(apiConfig.getApiKey());
-		Preconditions.checkArgument(!apiConfig.getApiKey().isEmpty());
+    /**
+     * Constructor
+     *
+     * @param logger Logger project name
+     */
+    public LogAppender(@NonNull final String logger,
+                       @NonNull final EventAdapter<T> eventAdapter,
+                       final Masker masker,
+                       final boolean skipJson) {
+        this.logger = logger;
+        this.eventAdapter = eventAdapter;
+        this.masker = masker;
+        this.skipJson = skipJson;
+    }
 
-		// Single JSON object mapper for all services
+    /**
+     * Constructor
+     *
+     * @param logger Logger project name
+     */
+    public LogAppender(@NonNull final String logger,
+                       @NonNull final EventAdapter<T> eventAdapter,
+                       final Masker masker) {
+        this(logger, eventAdapter, masker, false);
+    }
 
-		ObjectMapper objectMapper = new ObjectMapper();
+    /**
+     * Activates the appender
+     *
+     * @param apiConfig API configuration
+     */
+    public void activate(final ApiConfiguration apiConfig) {
 
-		// build the app identity service
+        Preconditions.checkNotNull(apiConfig);
+        Preconditions.checkNotNull(apiConfig.getApiUrl());
+        Preconditions.checkArgument(!apiConfig.getApiUrl().isEmpty());
+        Preconditions.checkNotNull(apiConfig.getApiKey());
+        Preconditions.checkArgument(!apiConfig.getApiKey().isEmpty());
 
-		AppIdentityService appIdentityService = new AppIdentityService(apiConfig, objectMapper);
+        // build the app identity service
 
-		// build the services for collecting and sending log messages
+        AppIdentityService appIdentityService = new AppIdentityService(apiConfig, new ObjectMapper());
 
-		this.collector = new LogCollector(logger, apiConfig.getEnvDetail(), appIdentityService);
+        // build the services for collecting and sending log messages
 
-		LogSender sender = new LogSender(apiConfig, objectMapper, this.masker, this.skipJson);
+        this.collector = new LogCollector(logger, apiConfig.getEnvDetail(), appIdentityService);
 
-		// set allowComDotStackify
-		
-		if (Boolean.TRUE.equals(apiConfig.getAllowComDotStackify())) {
-			this.allowComDotStackify = true;
-		}
-		
-		// build the background service to asynchronously post errors to Stackify
-		// startup the background service
+        // set allowComDotStackify
 
-		this.backgroundService = new LogBackgroundService(collector, sender);
-		this.backgroundService.start();
-	}
+        if (Boolean.TRUE.equals(apiConfig.getAllowComDotStackify())) {
+            this.allowComDotStackify = true;
+        }
 
-	/**
-	 * @see java.io.Closeable#close()
-	 */
-	@Override
-	public void close() throws IOException {
-		if (backgroundService != null) {
-			backgroundService.stop();
-		}
-	}
+        // build the background service to asynchronously post errors to Stackify
+        // startup the background service
 
-	/**
-	 * Adds the log message to the collector
-	 * @param event
-	 */
-	public void append(final T event) {
+        LogTransport logTransport = getLogTransport(apiConfig);
 
-		// make sure we can append the log message
+        this.backgroundService = new LogBackgroundService(collector, logTransport);
+        this.backgroundService.start();
+    }
 
-		if (backgroundService == null) {
-			return;
-		}
+    protected LogTransport getLogTransport(@NonNull final ApiConfiguration apiConfig) {
 
-		if (!backgroundService.isRunning()) {
-			return;
-		}
+        ObjectMapper objectMapper = new ObjectMapper();
 
-		// skip internal logging
-		
-		if (!allowComDotStackify) {
-			String className = eventAdapter.getClassName(event);
-			
-			if (className != null) {
-				if (className.startsWith(COM_DOT_STACKIFY)) {
-					return;
-				}
-			}
-		}
-		
-		// build the log message and queue it to be sent to Stackify
+        if (apiConfig.getTransport().equalsIgnoreCase(ApiConfiguration.TRANSPORT_DIRECT)) {
+            return new LogTransportDirect(apiConfig, objectMapper, masker, skipJson);
+        } else if (apiConfig.getTransport().equalsIgnoreCase(ApiConfiguration.TRANSPORT_AGENT_SOCKET)) {
+            return new LogTransportAgentSocket(apiConfig, masker, skipJson);
+        }
 
-		Throwable exception = eventAdapter.getThrowable(event);
+        throw new IllegalArgumentException("Invalid Stackify Transport: " + apiConfig.getTransport());
+    }
 
-		StackifyError error = null;
+    /**
+     * @see java.io.Closeable#close()
+     */
+    @Override
+    public void close() throws IOException {
+        if (backgroundService != null) {
+            backgroundService.stop();
+        }
+    }
 
-		if ((exception != null) || (eventAdapter.isErrorLevel(event))) {
-			StackifyError e = eventAdapter.getStackifyError(event, exception);
+    /**
+     * Adds the log message to the collector
+     *
+     * @param event
+     */
+    public void append(final T event) {
 
-			if (errorGovernor.errorShouldBeSent(e)) {
-				error = e;
-			}
-		}
+        // make sure we can append the log message
 
-		LogMsg logMsg = eventAdapter.getLogMsg(event, error);
+        if (backgroundService == null) {
+            return;
+        }
 
-		collector.addLogMsg(logMsg);
-	}
+        if (!backgroundService.isRunning()) {
+            return;
+        }
+
+        // skip internal logging
+
+        if (!allowComDotStackify) {
+            String className = eventAdapter.getClassName(event);
+            if (className != null) {
+                if (className.startsWith(COM_DOT_STACKIFY)) {
+                    return;
+                }
+            }
+        }
+
+        // build the log message and queue it to be sent to Stackify
+
+        Throwable exception = eventAdapter.getThrowable(event);
+
+        StackifyError error = null;
+
+        if ((exception != null) || (eventAdapter.isErrorLevel(event))) {
+            StackifyError e = eventAdapter.getStackifyError(event, exception);
+
+            if (errorGovernor.errorShouldBeSent(e)) {
+                error = e;
+            }
+        }
+
+        LogMsg logMsg = eventAdapter.getLogMsg(event, error);
+
+        collector.addLogMsg(logMsg);
+    }
 }
