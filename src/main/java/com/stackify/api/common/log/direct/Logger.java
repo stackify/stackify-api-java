@@ -15,6 +15,7 @@
  */
 package com.stackify.api.common.log.direct;
 
+import com.stackify.api.common.log.StackTraceUtil;
 import org.slf4j.LoggerFactory;
 
 import com.stackify.api.common.log.LogAppender;
@@ -43,25 +44,25 @@ public class Logger {
 				LogEvent.Builder builder = LogEvent.newBuilder();
 				builder.level(level);
 				builder.message(message);
-				
-				if ((level != null) && ("ERROR".equals(level.toUpperCase()))) {
-					StackTraceElement[] stackTrace = new Throwable().getStackTrace();
 
-					if ((stackTrace != null) && (1 < stackTrace.length)) {
-						StackTraceElement caller = stackTrace[1];
+				if ((level != null) && ("ERROR".equals(level.toUpperCase()))) {
+
+					StackTraceElement caller = StackTraceUtil.getStackTraceElement(new Throwable().getStackTrace());
+
+					if (caller != null) {
 						builder.className(caller.getClassName());
 						builder.methodName(caller.getMethodName());
-						builder.lineNumber(caller.getLineNumber());						
+						builder.lineNumber(caller.getLineNumber());
 					}
 				}
-				
+
 				appender.append(builder.build());
 			}
 		} catch (Throwable t) {
 			LOGGER.info("Unable to queue message to Stackify Log API service: {} {}", level, message, t);
 		}
 	}
-	
+
 	/**
 	 * Queues an exception to be sent to Stackify
 	 * @param e The exception
@@ -70,7 +71,7 @@ public class Logger {
 		if (e != null) {
 			try {
 				LogAppender<LogEvent> appender = LogManager.getAppender();
-	
+
 				if (appender != null) {
 					appender.append(LogEvent.newBuilder().level("ERROR").message(e.getMessage()).exception(e).build());
 				}
@@ -79,7 +80,7 @@ public class Logger {
 			}
 		}
 	}
-	
+
 	/**
 	 * Queues an exception to be sent to Stackify
 	 * @param level The log level
@@ -97,7 +98,7 @@ public class Logger {
 			LOGGER.info("Unable to queue exception to Stackify Log API service: {} {} {}", level, message, e, t);
 		}
 	}
-	
+
 	/**
 	 * Hidden to prevent construction
 	 */

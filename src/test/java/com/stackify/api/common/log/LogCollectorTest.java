@@ -15,88 +15,76 @@
  */
 package com.stackify.api.common.log;
 
-import java.io.IOException;
-
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.stackify.api.AppIdentity;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.AppIdentityService;
-import com.stackify.api.common.http.HttpException;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * LogCollector JUnit Test
+ *
  * @author Eric Martin
  */
 public class LogCollectorTest {
 
-	/**
-	 * testFlushEmpty
-	 * @throws HttpException 
-	 * @throws IOException 
-	 */
-	@Test
-	public void testFlushEmpty() throws IOException, HttpException {
-		LogSender sender = Mockito.mock(LogSender.class);
-		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
-		
-		collector.flush(sender);
-		
-		Mockito.verifyZeroInteractions(sender);
-		Mockito.verifyZeroInteractions(appIdentityService);
-	}
+    /**
+     * testFlushEmpty
+     */
+    @Test
+    public void testFlushEmpty() throws Exception {
+        LogTransportDirect sender = Mockito.mock(LogTransportDirect.class);
+        AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
+        LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
 
-	/**
-	 * testAddAndFlushWithoutAppIdentity
-	 * @throws IOException 
-	 * @throws HttpException 
-	 */
-	@Test
-	public void testAddAndFlushWithoutAppIdentity() throws IOException, HttpException {
-		LogSender sender = Mockito.mock(LogSender.class);
-		Mockito.when(sender.send(Mockito.any(LogMsgGroup.class))).thenReturn(200);
+        collector.flush(sender);
 
-		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(null);
-		
-		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
-		
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		
-		collector.flush(sender);
-		
-		Mockito.verify(appIdentityService).getAppIdentity();
-		Mockito.verify(sender).send(Mockito.any(LogMsgGroup.class));
-	}
-	
-	/**
-	 * testAddAndFlushWithAppIdentity
-	 * @throws IOException 
-	 * @throws HttpException 
-	 */
-	@Test
-	public void testAddAndFlushWithAppIdentity() throws IOException, HttpException {
-		LogSender sender = Mockito.mock(LogSender.class);
-		Mockito.when(sender.send(Mockito.any(LogMsgGroup.class))).thenReturn(200);
+        Mockito.verifyZeroInteractions(sender);
+        Mockito.verifyZeroInteractions(appIdentityService);
+    }
 
-		AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
-		Mockito.when(appIdentityService.getAppIdentity()).thenReturn(Mockito.mock(AppIdentity.class));
+    /**
+     * testAddAndFlushWithoutAppIdentity
+     */
+    @Test
+    public void testAddAndFlushWithoutAppIdentity() throws Exception {
+        LogTransportDirect sender = Mockito.mock(LogTransportDirect.class);
 
-		LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
-		
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		collector.addLogMsg(Mockito.mock(LogMsg.class));
-		
-		collector.flush(sender);
-		
-		Mockito.verify(appIdentityService).getAppIdentity();
-		Mockito.verify(sender).send(Mockito.any(LogMsgGroup.class));
-	}
+        AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
+        Mockito.when(appIdentityService.getAppIdentity()).thenReturn(null);
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
+
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+
+        collector.flush(sender);
+
+        Mockito.verify(appIdentityService).getAppIdentity();
+    }
+
+    /**
+     * testAddAndFlushWithAppIdentity
+     */
+    @Test
+    public void testAddAndFlushWithAppIdentity() throws Exception {
+        LogTransportDirect sender = Mockito.mock(LogTransportDirect.class);
+
+        AppIdentityService appIdentityService = Mockito.mock(AppIdentityService.class);
+        Mockito.when(appIdentityService.getAppIdentity()).thenReturn(Mockito.mock(AppIdentity.class));
+
+        LogCollector collector = new LogCollector("logger", Mockito.mock(EnvironmentDetail.class), appIdentityService);
+
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+        collector.addLogMsg(Mockito.mock(LogMsg.class));
+
+        collector.flush(sender);
+
+        Mockito.verify(appIdentityService).getAppIdentity();
+        Mockito.verify(sender).send(Mockito.any(LogMsgGroup.class));
+    }
 }

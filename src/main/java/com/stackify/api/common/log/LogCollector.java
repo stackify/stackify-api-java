@@ -15,183 +15,194 @@
  */
 package com.stackify.api.common.log;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-
 import com.stackify.api.AppIdentity;
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.LogMsg;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.collect.SynchronizedEvictingQueue;
-import com.stackify.api.common.http.HttpException;
 import com.stackify.api.common.util.Preconditions;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * LogCollector
+ *
  * @author Eric Martin
  */
+@Slf4j
 public class LogCollector {
 
-	/**
-	 * Max batch size of log messages to be sent in a single request
-	 */
-	private static final int MAX_BATCH = 100;
+    /**
+     * Max batch size of log messages to be sent in a single request
+     */
+    private static final int MAX_BATCH = 100;
 
-	private static final String DEFAULT_PLATFORM = "java";
+    private static final String DEFAULT_PLATFORM = "java";
 
-	/**
-	 * The logger (project) name
-	 */
-	private final String logger;
+    /**
+     * The logger (project) name
+     */
+    private final String logger;
 
-	/**
-	 * The logger platform (log type)
-	 */
-	private final String platform;
+    /**
+     * The logger platform (log type)
+     */
+    private final String platform;
 
-	/**
-	 * Environment details
-	 */
-	private final EnvironmentDetail envDetail;
+    /**
+     * Environment details
+     */
+    private final EnvironmentDetail envDetail;
 
-	/**
-	 * Application identity service
-	 */
-	private final AppIdentityService appIdentityService;
+    /**
+     * Application identity service
+     */
+    private final AppIdentityService appIdentityService;
 
-	/**
-	 * The queue of objects to be transmitted
-	 */
-	private final Queue<LogMsg> queue = new SynchronizedEvictingQueue<LogMsg>(10000);
+    /**
+     * The queue of objects to be transmitted
+     */
+    private final Queue<LogMsg> queue = new SynchronizedEvictingQueue<LogMsg>(10000);
 
-	/**
-	 * Constructor
-	 *
-	 * @param platform  Logger platform (log type)
-	 * @param logger    The logger (project) name
-	 * @param envDetail Environment details
-	 */
-	public LogCollector(@NonNull final String platform,
-						@NonNull final String logger,
-						@NonNull final EnvironmentDetail envDetail,
-						@NonNull final AppIdentityService appIdentityService) {
-		this.platform = platform;
-		this.logger = logger;
-		this.envDetail = envDetail;
-		this.appIdentityService = appIdentityService;
-	}
+    private final RetryPolicy<LogMsgGroup> retryPolicy = new RetryPolicy<LogMsgGroup>()
+            .withDelay(Duration.ofSeconds(10))
+            .withMaxRetries(3);
 
-	/**
-	 * Constructor
-	 *
-	 * @param logger    The logger (project) name
-	 * @param envDetail Environment details
-	 */
-	public LogCollector(final String logger,
-						final EnvironmentDetail envDetail,
-						final AppIdentityService appIdentityService) {
-		this(DEFAULT_PLATFORM, logger, envDetail, appIdentityService);
-	}
+    /**
+     * Constructor
+     *
+     * @param platform  Logger platform (log type)
+     * @param logger    The logger (project) name
+     * @param envDetail Environment details
+     */
+    public LogCollector(@NonNull final String platform,
+                        @NonNull final String logger,
+                        @NonNull final EnvironmentDetail envDetail,
+                        @NonNull final AppIdentityService appIdentityService) {
+        this.platform = platform;
+        this.logger = logger;
+        this.envDetail = envDetail;
+        this.appIdentityService = appIdentityService;
+    }
 
-	/**
-	 * Queues logMsg to be sent
-	 * @param logMsg The log message
-	 */
-	public void addLogMsg(final LogMsg logMsg) {
-		Preconditions.checkNotNull(logMsg);
-		queue.offer(logMsg);
-	}
+    /**
+     * Constructor
+     *
+     * @param logger    The logger (project) name
+     * @param envDetail Environment details
+     */
+    public LogCollector(final String logger,
+                        final EnvironmentDetail envDetail,
+                        final AppIdentityService appIdentityService) {
+        this(DEFAULT_PLATFORM, logger, envDetail, appIdentityService);
+    }
 
-	/**
-	 * Flushes the queue by sending all messages to Stackify
-	 * @param sender The LogMsgGroup sender
-	 * @return The number of messages sent to Stackify
-	 * @throws IOException
-	 * @throws HttpException
-	 */
-	public int flush(final LogSender sender) throws IOException, HttpException {
+    /**
+     * Queues logMsg to be sent
+     *
+     * @param logMsg The log message
+     */
+    public void addLogMsg(final LogMsg logMsg) {
+        Preconditions.checkNotNull(logMsg);
+        queue.offer(logMsg);
+    }
 
-		int numSent = 0;
-		int maxToSend = queue.size();
+    /**
+     * Flushes the queue by sending all messages to Stackify
+     *
+     * @param logTransport The LogMsgGroup sender
+     * @return The number of messages sent to Stackify
+     * @throws Exception
+     */
+    public int flush(final LogTransport logTransport) throws Exception {
 
-		if (0 < maxToSend) {
-			AppIdentity appIdentity = appIdentityService.getAppIdentity();
+        int numSent = 0;
+        int maxToSend = queue.size();
 
-			while (numSent < maxToSend) {
+        if (0 < maxToSend) {
+            AppIdentity appIdentity = appIdentityService.getAppIdentity();
 
-				// get the next batch of messages
-				int batchSize = Math.min(maxToSend - numSent, MAX_BATCH);
+            while (numSent < maxToSend && queue.size() > 0) {
 
-				List<LogMsg> batch = new ArrayList<LogMsg>(batchSize);
+                // get the next batch of messages
+                int batchSize = Math.min(maxToSend - numSent, MAX_BATCH);
 
-				for (int i = 0; i < batchSize; ++i) {
-					batch.add(queue.remove());
-				}
+                List<LogMsg> batch = new ArrayList<LogMsg>(batchSize);
 
-				// build the log message group
-				LogMsgGroup group = createLogMessageGroup(batch, platform, logger, envDetail, appIdentity);
+                for (int i = 0; i < batchSize; ++i) {
+                    batch.add(queue.remove());
+                }
 
-				// send the batch to Stackify
-				int httpStatus = sender.send(group);
+                if (batch.size() > 0) {
+                    // build the log message group
+                    LogMsgGroup group = createLogMessageGroup(batch, platform, logger, envDetail, appIdentity);
 
-				// if the batch failed to transmit, return the appropriate transmission status
-				if (httpStatus != HttpURLConnection.HTTP_OK) {
-					throw new HttpException(httpStatus);
-				}
+                    send(logTransport, group);
 
-				// next iteration
-				numSent += batchSize;
-			}
-		}
+                    // next iteration
+                    numSent += batchSize;
+                }
+            }
+        }
 
-		return numSent;
-	}
+        return numSent;
+    }
 
-	/**
-	 *
-	 * @param batch - a bunch of messages that should be sent over the wire
-	 * @param platform - platform (log type)
-	 * @param logger - logger (project) name
-	 * @param envDetail - environment details
-	 * @param appIdentity - application identity
-	 * @return LogMessage group object with
-	 */
-	private LogMsgGroup createLogMessageGroup(final List<LogMsg> batch,
-											  final String platform,
-											  final String logger,
-											  final EnvironmentDetail envDetail,
-											  final AppIdentity appIdentity) {
-		final LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
+    /**
+     * Send group to transport - with retry policy configured
+     */
+    private void send(final LogTransport logTransport,
+                      final LogMsgGroup group) {
+        Failsafe.with(retryPolicy).runAsync(() -> logTransport.send(group));
+    }
 
-		groupBuilder
-				.platform(platform)
-				.logger(logger)
-				.serverName(envDetail.getDeviceName())
-				.env(envDetail.getConfiguredEnvironmentName())
-				.appName(envDetail.getConfiguredAppName())
-				.appLoc(envDetail.getAppLocation());
+    /**
+     * @param batch       - a bunch of messages that should be sent over the wire
+     * @param platform    - platform (log type)
+     * @param logger      - logger (project) name
+     * @param envDetail   - environment details
+     * @param appIdentity - application identity
+     * @return LogMessage group object with
+     */
+    private LogMsgGroup createLogMessageGroup(final List<LogMsg> batch,
+                                              final String platform,
+                                              final String logger,
+                                              final EnvironmentDetail envDetail,
+                                              final AppIdentity appIdentity) {
+        final LogMsgGroup.Builder groupBuilder = LogMsgGroup.newBuilder();
 
-		if (appIdentity != null) {
-			groupBuilder
-					.cdId(appIdentity.getDeviceId())
-					.cdAppId(appIdentity.getDeviceAppId())
-					.appNameId(appIdentity.getAppNameId())
-					.appEnvId(appIdentity.getAppEnvId())
-					.envId(appIdentity.getEnvId())
-					.env(appIdentity.getEnv());
+        groupBuilder
+                .platform(platform)
+                .logger(logger)
+                .serverName(envDetail.getDeviceName())
+                .env(envDetail.getConfiguredEnvironmentName())
+                .appName(envDetail.getConfiguredAppName())
+                .appLoc(envDetail.getAppLocation());
 
-			if ((appIdentity.getAppName() != null) && (0 < appIdentity.getAppName().length())) {
-				groupBuilder.appName(appIdentity.getAppName());
-			}
-		}
+        if (appIdentity != null) {
+            groupBuilder
+                    .cdId(appIdentity.getDeviceId())
+                    .cdAppId(appIdentity.getDeviceAppId())
+                    .appNameId(appIdentity.getAppNameId())
+                    .appEnvId(appIdentity.getAppEnvId())
+                    .envId(appIdentity.getEnvId())
+                    .env(appIdentity.getEnv());
 
-		groupBuilder.msgs(batch);
+            if ((appIdentity.getAppName() != null) && (0 < appIdentity.getAppName().length())) {
+                groupBuilder.appName(appIdentity.getAppName());
+            }
+        }
 
-		return groupBuilder.build();
-	}
+        groupBuilder.msgs(batch);
+
+        return groupBuilder.build();
+    }
 }

@@ -22,6 +22,7 @@ import lombok.ToString;
 
 /**
  * ApiConfiguration
+ *
  * @author Eric Martin
  */
 @ToString
@@ -29,61 +30,76 @@ import lombok.ToString;
 @Builder(builderClassName = "Builder", toBuilder = true, builderMethodName = "newBuilder")
 public class ApiConfiguration {
 
-	/**
-	 * Default API URL
-	 */
-	private static final String DEFAULT_API_URL = "https://api.stackify.com";
+    public static final String TRANSPORT_DIRECT = "direct";
+    public static final String TRANSPORT_AGENT_SOCKET = "agent_socket";
 
-	/**
-	 * API URL
-	 */
-	private final String apiUrl;
+    private static final String DEFAULT_TRANSPORT = TRANSPORT_DIRECT;
+    private static final String DEFAULT_AGENT_SOCKET_PATH_UNIX = "/usr/local/stackify/stackify.sock";
 
-	/**
-	 * API Key
-	 */
-	private final String apiKey;
+    /**
+     * Default API URL
+     */
+    private static final String DEFAULT_API_URL = "https://api.stackify.com";
 
-	/**
-	 * Application name
-	 */
-	private final String application;
+    /**
+     * API URL
+     */
+    private final String apiUrl;
 
-	/**
-	 * Environment
-	 */
-	private final String environment;
+    /**
+     * API Key
+     */
+    private final String apiKey;
 
-	/**
-	 * Environment details
-	 */
-	private final EnvironmentDetail envDetail;
+    /**
+     * Application name
+     */
+    private final String application;
 
-	/**
-	 * Add #SKIPJSON tag to messages containing Json
-	 */
-	private final Boolean skipJson;
+    /**
+     * Environment
+     */
+    private final String environment;
 
-	/**
-	 * Allow logging from com.stackify.* 
-	 */
-	private final Boolean allowComDotStackify;
+    /**
+     * Environment details
+     */
+    private final EnvironmentDetail envDetail;
 
-	/**
-	 * Http Proxy Host ie) 10.20.30.40
-	 */
-	private final String httpProxyHost;
+    /**
+     * Add #SKIPJSON tag to messages containing Json
+     */
+    private final Boolean skipJson;
 
-	/**
-	 * Http Proxy Port ie) 8080
-	 */
-	private final String httpProxyPort;
-	
-	/**
-	 * @return the apiUrl
-	 */
-	public String getApiUrl() {
-		return apiUrl != null ? apiUrl : DEFAULT_API_URL;
-	}
-	
+    /**
+     * Allow logging from com.stackify.*
+     */
+    private final Boolean allowComDotStackify;
+
+    /**
+     * Http Proxy Host ie) 10.20.30.40
+     */
+    private final String httpProxyHost;
+
+    /**
+     * Http Proxy Port ie) 8080
+     */
+    private final String httpProxyPort;
+
+    private final String transport;
+
+    /**
+     * @return the apiUrl
+     */
+    public String getApiUrl() {
+        return apiUrl != null ? apiUrl : DEFAULT_API_URL;
+    }
+
+    public String getTransport() {
+        return transport != null ? transport : DEFAULT_TRANSPORT;
+    }
+
+    public String getAgentSocketPath() {
+        return DEFAULT_AGENT_SOCKET_PATH_UNIX;
+    }
 }

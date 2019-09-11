@@ -18,7 +18,10 @@ package com.stackify.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Each TraceFrame object represents a single stack frame in a stack trace
@@ -36,134 +39,30 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  *
  * @author Eric Martin
  */
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder(builderClassName = "Builder", builderMethodName = "newBuilder", toBuilder = true)
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(builder = TraceFrame.Builder.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TraceFrame {
 
-	/**
-	 * The file name
-	 */
-	@JsonProperty("CodeFileName")
-	private final String codeFileName;
+    /**
+     * The file name
+     */
+    @JsonProperty("CodeFileName")
+    private String codeFileName;
 
-	/**
-	 * The line number
-	 */
-	@JsonProperty("LineNum")
-	private final Integer lineNum;
+    /**
+     * The line number
+     */
+    @JsonProperty("LineNum")
+    private Integer lineNum;
 
-	/**
-	 * The method name
-	 */
-	@JsonProperty("Method")
-	private final String method;
+    /**
+     * The method name
+     */
+    @JsonProperty("Method")
+    private String method;
 
-	/**
-	 * @return the codeFileName
-	 */
-	public String getCodeFileName() {
-		return codeFileName;
-	}
-
-	/**
-	 * @return the lineNum
-	 */
-	public Integer getLineNum() {
-		return lineNum;
-	}
-
-	/**
-	 * @return the method
-	 */
-	public String getMethod() {
-		return method;
-	}
-
-	/**
-	 * @return an instance of Builder based on current state
-	 */
-	public Builder toBuilder() {
-		return newBuilder()
-			.codeFileName(this.codeFileName)
-			.lineNum(this.lineNum)
-			.method(this.method);
-	}
-
-	/**
-	 * @param builder The Builder object that contains all of the values for initialization
-	 */
-	private TraceFrame(final Builder builder) {
-		this.codeFileName = builder.codeFileName;
-		this.lineNum = builder.lineNum;
-		this.method = builder.method;
-	}
-
-	/**
-	 * @return A new instance of the Builder
-	 */
-	public static Builder newBuilder() {
-		return new Builder();
-	}
-
-	/**
-	 * TraceFrame.Builder separates the construction of a TraceFrame from its representation
-	 */
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class Builder {
-
-		/**
-		 * The builder's codeFileName
-		 */
-		@JsonProperty("CodeFileName")
-		private String codeFileName;
-
-		/**
-		 * The builder's lineNum
-		 */
-		@JsonProperty("LineNum")
-		private Integer lineNum;
-
-		/**
-		 * The builder's method
-		 */
-		@JsonProperty("Method")
-		private String method;
-
-		/**
-		 * Sets the builder's codeFileName
-		 * @param codeFileName The codeFileName to be set
-		 * @return Reference to the current object
-		 */
-		public Builder codeFileName(final String codeFileName) {
-			this.codeFileName = codeFileName;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's lineNum
-		 * @param lineNum The lineNum to be set
-		 * @return Reference to the current object
-		 */
-		public Builder lineNum(final Integer lineNum) {
-			this.lineNum = lineNum;
-			return this;
-		}
-
-		/**
-		 * Sets the builder's method
-		 * @param method The method to be set
-		 * @return Reference to the current object
-		 */
-		public Builder method(final String method) {
-			this.method = method;
-			return this;
-		}
-
-		/**
-		 * @return A new object constructed from this builder
-		 */
-		public TraceFrame build() {
-			return new TraceFrame(this);
-		}
-	}
 }

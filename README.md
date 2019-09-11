@@ -1,26 +1,14 @@
-# stackify-api-java
-
 [![Maven Central](https://img.shields.io/maven-central/v/com.stackify/stackify-api-java.svg)](http://mvnrepository.com/artifact/com.stackify/stackify-api-java)
-[![Build Status](https://travis-ci.org/stackify/stackify-api-java.png)](https://travis-ci.org/stackify/stackify-api-java)
 [![Coverage Status](https://coveralls.io/repos/stackify/stackify-api-java/badge.png?branch=master)](https://coveralls.io/r/stackify/stackify-api-java?branch=master)
 
-Stackify API for Java
+## Stackify API for Java
 
-Errors and Logs Overview:
-
-http://support.stackify.com/errors-and-logs-overview/
-
-Sign Up for a Trial:
-
-http://www.stackify.com/sign-up/
-
-Log4j 1.2 Appender:
-
-https://github.com/stackify/stackify-log-log4j12
-
-Logback Appender:
-
-https://github.com/stackify/stackify-log-logback
+* **Errors and Logs Overview:** http://support.stackify.com/errors-and-logs-overview/
+* **Sign Up for a Trial:** http://www.stackify.com/sign-up/
+* **Appenders**
+    * **Log4j 1.2:** https://github.com/stackify/stackify-log-log4j12
+    * **Log4j 2.x:** https://github.com/stackify/stackify-log-log4j2
+    * **Logback:** https://github.com/stackify/stackify-log-logback
 
 ## Installation
 
@@ -29,7 +17,7 @@ Add it as a maven dependency:
 <dependency>
     <groupId>com.stackify</groupId>
     <artifactId>stackify-api-java</artifactId>
-    <version>INSERT_LATEST_MAVEN_CENTRAL_VERSION</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -88,38 +76,20 @@ Be sure to shutdown the Direct Logger to flush this appender of any messages and
 LogManager.shutdown();
 ```
 
-### RUM Manual Instrumentation 
+## Legacy Support 
 
-Real User Monitoring (RUM) manual instrumentation allows you to specify where the RUM JavaScript block is injected. 
-
-It is recommended you provide a `stackify-api.properties` file in your application classpath with the following content: 
-
-````
-stackify.application=My Application Name
-stackify.environment=My Environment Name
-````
-
-Your application code will need to call out to the Stackify `com.stackify.apm.Stackify.getRUMJavaScriptBlock()` method in the `<head>` section as detailed below: 
-
-**JSP Example**
-  
-````
-<html>
-  <head> 
-        <%= com.stackify.apm.Stackify.getRUMJavaScriptBlock() %>
-        <script and link tags>
-    </head>
-    <body>
-    ... 
-    </body>
-</html>
-````
-
-
+For legacy support of **Java 1.6 and 1.7** use the following maven dependency: 
+```
+<dependency>
+    <groupId>com.stackify</groupId>
+    <artifactId>stackify-api-java</artifactId>
+    <version>3.1.2</version>
+</dependency>
+```
 
 ## License
 
-Copyright 2013 Stackify, LLC.
+Copyright 2019 Stackify, LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

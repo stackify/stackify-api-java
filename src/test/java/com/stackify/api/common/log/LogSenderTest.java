@@ -33,9 +33,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
  * @author Eric Martin
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LogSender.class, HttpClient.class})
+@PrepareForTest({LogTransportDirect.class, HttpClient.class})
 public class LogSenderTest {
-	
+
 	/**
 	 * testSend
 	 * @throws Exception
@@ -48,7 +48,7 @@ public class LogSenderTest {
 
 		ApiConfiguration apiConfig = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").build();
 
-		LogSender sender = new LogSender(apiConfig, objectMapper, masker, true);
+		LogTransportDirect sender = new LogTransportDirect(apiConfig, objectMapper, masker, true);
 
 		HttpClient httpClient = PowerMockito.mock(HttpClient.class);
 		PowerMockito.whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);

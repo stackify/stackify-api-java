@@ -15,61 +15,55 @@
  */
 package com.stackify.api.common.log;
 
-import java.io.IOException;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.stackify.api.common.http.HttpException;
-
 /**
  * LogBackgroundService JUnit Test
- * 
+ *
  * @author Eric Martin
  */
 public class LogBackgroundServiceTest {
-	
-	/**
-	 * testConstructor
-	 */
-	@Test
-	public void testConstructor() {
-		LogCollector collector = Mockito.mock(LogCollector.class);
-		LogSender sender = Mockito.mock(LogSender.class);
-		LogBackgroundService service = new LogBackgroundService(collector, sender);
 
-		Assert.assertFalse(service.isRunning());
-	}
-		
-	/**
-	 * testShutDown
-	 * @throws Exception 
-	 */
-	@Test
-	public void testShutDown() throws Exception {
-		LogCollector collector = Mockito.mock(LogCollector.class);
-		LogSender sender = Mockito.mock(LogSender.class);
-		LogBackgroundService service = new LogBackgroundService(collector, sender);
-		
-		service.shutDown();
-		
-		Mockito.verify(collector).flush(Mockito.any(LogSender.class));
-	}
-	
-	/**
-	 * testRunOneIteration
-	 * @throws HttpException 
-	 * @throws IOException 
-	 */
-	@Test
-	public void testRunOneIteration() throws IOException, HttpException {
-		LogCollector collector = Mockito.mock(LogCollector.class);
-		LogSender sender = Mockito.mock(LogSender.class);
-		LogBackgroundService service = new LogBackgroundService(collector, sender);
-				
-		service.runOneIteration();
-		
-		Mockito.verify(collector).flush(Mockito.any(LogSender.class));
-	}
+    /**
+     * testConstructor
+     */
+    @Test
+    public void testConstructor() {
+        LogCollector collector = Mockito.mock(LogCollector.class);
+        LogTransportDirect sender = Mockito.mock(LogTransportDirect.class);
+
+        LogBackgroundService service = new LogBackgroundService(collector, sender);
+
+        Assert.assertFalse(service.isRunning());
+    }
+
+    /**
+     * testShutDown
+     */
+    @Test
+    public void testShutDown() throws Exception {
+        LogCollector collector = Mockito.mock(LogCollector.class);
+        LogTransportDirect sender = Mockito.mock(LogTransportDirect.class);
+        LogBackgroundService service = new LogBackgroundService(collector, sender);
+
+        service.shutDown();
+
+        Mockito.verify(collector).flush(Mockito.any(LogTransportDirect.class));
+    }
+
+    /**
+     * testRunOneIteration
+     */
+    @Test
+    public void testRunOneIteration() throws Exception {
+        LogCollector collector = Mockito.mock(LogCollector.class);
+        LogTransportDirect sender = Mockito.mock(LogTransportDirect.class);
+        LogBackgroundService service = new LogBackgroundService(collector, sender);
+
+        service.runOneIteration();
+
+        Mockito.verify(collector).flush(Mockito.any(LogTransportDirect.class));
+    }
 }
