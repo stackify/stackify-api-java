@@ -148,7 +148,7 @@ public class LogMsgGroupConverter {
             builder.setEnvironmentDetail(convert(stackifyError.getEnvironmentDetail()));
         }
         if (stackifyError.getOccurredEpochMillis() != null) {
-            builder.setDateMillis(stackifyError.getOccurredEpochMillis().getTime());
+            builder.setDateMillis(stackifyError.getOccurredEpochMillis());
         }
         if (stackifyError.getError() != null) {
             builder.setErrorItem(convert(stackifyError.getError()));

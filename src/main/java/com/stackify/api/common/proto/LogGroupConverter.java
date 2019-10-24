@@ -12,7 +12,6 @@ import com.stackify.api.WebRequestDetail;
 import lombok.NonNull;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -84,7 +83,7 @@ public class LogGroupConverter {
     private static StackifyError convert(@NonNull final StackifyProto.LogGroup.Log.Error error) {
         return StackifyError.newBuilder()
                 .environmentDetail(error.hasEnvironmentDetail() ? convert(error.getEnvironmentDetail()) : null)
-                .occurredEpochMillis(new Date(error.getDateMillis()))
+                .occurredEpochMillis(error.getDateMillis())
                 .error(error.hasErrorItem() ? convert(error.getErrorItem()) : null)
                 .webRequestDetail(error.hasWebRequestDetail() ? convert(error.getWebRequestDetail()) : null)
                 .serverVariables(error.getServerVariablesMap())

@@ -15,12 +15,12 @@
  */
 package com.stackify.api;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * StackifyError JUnit Test
@@ -29,49 +29,49 @@ import org.junit.Test;
  */
 public class StackifyErrorTest {
 
-	/**
-	 * testBuilder
-	 */
-	@Test
-	public void testBuilder() {
-		EnvironmentDetail environment = EnvironmentDetail.newBuilder().build();
-		Date timeStamp = new Date();
-		ErrorItem errorDetail = ErrorItem.newBuilder().build();
-		WebRequestDetail webRequestDetail = WebRequestDetail.newBuilder().build();
-		Map<String, String> serverVariables = Collections.singletonMap("serverKey", "serverValue");
-		String customerName = "customerName";
-		String userName = "userName";
+    /**
+     * testBuilder
+     */
+    @Test
+    public void testBuilder() {
+        EnvironmentDetail environment = EnvironmentDetail.newBuilder().build();
+        Date timeStamp = new Date();
+        ErrorItem errorDetail = ErrorItem.newBuilder().build();
+        WebRequestDetail webRequestDetail = WebRequestDetail.newBuilder().build();
+        Map<String, String> serverVariables = Collections.singletonMap("serverKey", "serverValue");
+        String customerName = "customerName";
+        String userName = "userName";
 
-		StackifyError.Builder builder = StackifyError.newBuilder();
-		builder.environmentDetail(environment);
-		builder.occurredEpochMillis(timeStamp);
-		builder.error(errorDetail);
-		builder.webRequestDetail(webRequestDetail);
-		builder.serverVariables(serverVariables);
-		builder.customerName(customerName);
-		builder.userName(userName);
-		StackifyError stackifyError = builder.build();
+        StackifyError.Builder builder = StackifyError.newBuilder();
+        builder.environmentDetail(environment);
+        builder.occurredEpochMillis(timeStamp.getTime());
+        builder.error(errorDetail);
+        builder.webRequestDetail(webRequestDetail);
+        builder.serverVariables(serverVariables);
+        builder.customerName(customerName);
+        builder.userName(userName);
+        StackifyError stackifyError = builder.build();
 
-		Assert.assertNotNull(stackifyError);
+        Assert.assertNotNull(stackifyError);
 
-		Assert.assertEquals(environment, stackifyError.getEnvironmentDetail());
-		Assert.assertEquals(timeStamp, stackifyError.getOccurredEpochMillis());
-		Assert.assertEquals(errorDetail, stackifyError.getError());
-		Assert.assertEquals(webRequestDetail, stackifyError.getWebRequestDetail());
-		Assert.assertEquals(serverVariables, stackifyError.getServerVariables());
-		Assert.assertEquals(customerName, stackifyError.getCustomerName());
-		Assert.assertEquals(userName, stackifyError.getUserName());
-		
-		StackifyError stackifyErrorCopy = stackifyError.toBuilder().build();
-		
-		Assert.assertNotNull(stackifyErrorCopy);
+        Assert.assertEquals(environment, stackifyError.getEnvironmentDetail());
+        Assert.assertEquals(timeStamp.getTime(), (long) stackifyError.getOccurredEpochMillis());
+        Assert.assertEquals(errorDetail, stackifyError.getError());
+        Assert.assertEquals(webRequestDetail, stackifyError.getWebRequestDetail());
+        Assert.assertEquals(serverVariables, stackifyError.getServerVariables());
+        Assert.assertEquals(customerName, stackifyError.getCustomerName());
+        Assert.assertEquals(userName, stackifyError.getUserName());
 
-		Assert.assertEquals(environment, stackifyErrorCopy.getEnvironmentDetail());
-		Assert.assertEquals(timeStamp, stackifyErrorCopy.getOccurredEpochMillis());
-		Assert.assertEquals(errorDetail, stackifyErrorCopy.getError());
-		Assert.assertEquals(webRequestDetail, stackifyErrorCopy.getWebRequestDetail());
-		Assert.assertEquals(serverVariables, stackifyErrorCopy.getServerVariables());
-		Assert.assertEquals(customerName, stackifyErrorCopy.getCustomerName());
-		Assert.assertEquals(userName, stackifyErrorCopy.getUserName());		
-	}
+        StackifyError stackifyErrorCopy = stackifyError.toBuilder().build();
+
+        Assert.assertNotNull(stackifyErrorCopy);
+
+        Assert.assertEquals(environment, stackifyErrorCopy.getEnvironmentDetail());
+        Assert.assertEquals(timeStamp.getTime(), (long) stackifyErrorCopy.getOccurredEpochMillis());
+        Assert.assertEquals(errorDetail, stackifyErrorCopy.getError());
+        Assert.assertEquals(webRequestDetail, stackifyErrorCopy.getWebRequestDetail());
+        Assert.assertEquals(serverVariables, stackifyErrorCopy.getServerVariables());
+        Assert.assertEquals(customerName, stackifyErrorCopy.getCustomerName());
+        Assert.assertEquals(userName, stackifyErrorCopy.getUserName());
+    }
 }

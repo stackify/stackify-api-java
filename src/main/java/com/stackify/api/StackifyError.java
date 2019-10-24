@@ -23,7 +23,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -60,7 +59,7 @@ public class StackifyError {
      * Date/time of the error
      */
     @JsonProperty("OccurredEpochMillis")
-    private Date occurredEpochMillis;
+    private Long occurredEpochMillis;
 
     /**
      * Error details

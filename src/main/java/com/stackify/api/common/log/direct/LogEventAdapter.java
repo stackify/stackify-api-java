@@ -26,8 +26,6 @@ import com.stackify.api.common.log.ServletLogContext;
 import com.stackify.api.common.util.Maps;
 import com.stackify.api.common.util.Preconditions;
 
-import java.util.Date;
-
 /**
  * LogEvent
  * @author Eric Martin
@@ -38,7 +36,7 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 	 * Environment detail
 	 */
 	private final EnvironmentDetail envDetail;
-		
+
 	/**
 	 * Constructor
 	 * @param envDetail Environment detail
@@ -47,7 +45,7 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		Preconditions.checkNotNull(envDetail);
 		this.envDetail = envDetail;
 	}
-	
+
 	/**
 	 * @see com.stackify.api.common.log.EventAdapter#getThrowable(java.lang.Object)
 	 */
@@ -62,9 +60,9 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 	@Override
 	public StackifyError getStackifyError(final LogEvent event, final Throwable exception) {
 		StackifyError.Builder builder = StackifyError.newBuilder();
-		builder.environmentDetail(envDetail);		
-		builder.occurredEpochMillis(new Date(event.getTimestamp()));
-		
+		builder.environmentDetail(envDetail);
+		builder.occurredEpochMillis( event.getTimestamp());
+
 		if (exception != null) {
 			builder.error(Throwables.toErrorItem(event.getMessage(), exception));
 		} else {
@@ -76,7 +74,7 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		if (user != null) {
 			builder.userName(user);
 		}
-		
+
 		WebRequestDetail webRequest = APMLogData.isLinked() ? APMLogData.getWebRequest() : ServletLogContext.getWebRequest();
 
 		if (webRequest != null) {
@@ -84,7 +82,7 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		}
 
 		builder.serverVariables(Maps.fromProperties(System.getProperties()));
-		
+
 		return builder.build();
 	}
 
@@ -97,7 +95,7 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		builder.msg(event.getMessage());
 		builder.ex(error);
 		builder.epochMs(event.getTimestamp());
-		
+
 		if (event.getLevel() != null) {
 			builder.level(event.getLevel().toLowerCase());
 		}
@@ -107,7 +105,7 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		if (transactionId != null) {
 			builder.transId(transactionId);
 		}
-						
+
 		return builder.build();
 	}
 
@@ -119,7 +117,7 @@ public class LogEventAdapter implements EventAdapter<LogEvent>  {
 		if (event.getLevel() != null) {
 			return "ERROR".equals(event.getLevel().toUpperCase());
 		}
-		
+
 		return false;
 	}
 

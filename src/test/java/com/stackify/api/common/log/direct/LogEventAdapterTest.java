@@ -15,131 +15,131 @@
  */
 package com.stackify.api.common.log.direct;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.stackify.api.EnvironmentDetail;
 import com.stackify.api.ErrorItem;
 import com.stackify.api.LogMsg;
 import com.stackify.api.StackifyError;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * LogEventAdapterTest
+ *
  * @author Eric Martin
  */
 public class LogEventAdapterTest {
 
-	/**
-	 * testGetThrowable
-	 */
-	@Test
-	public void testGetThrowable() {
-		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
-		LogEventAdapter adapter = new LogEventAdapter(envDetail);
-		
-		Throwable exception = new NullPointerException();		
-		LogEvent eventWithException = LogEvent.newBuilder().exception(exception).build();
-		Throwable present = adapter.getThrowable(eventWithException);
-		Assert.assertNotNull(present);
-		Assert.assertEquals(exception, present);
-		
-		LogEvent eventWithoutException = LogEvent.newBuilder().build();
-		Throwable absent = adapter.getThrowable(eventWithoutException);
-		Assert.assertNull(absent);
-	}
-	
-	/**
-	 * testGetStackifyError
-	 */
-	@Test
-	public void testGetStackifyError() {
-		String level = "level";
-		String message = "message";
-		Throwable exception = new NullPointerException();
-		LogEvent event = LogEvent.newBuilder().level(level).message(message).exception(exception).build();
+    /**
+     * testGetThrowable
+     */
+    @Test
+    public void testGetThrowable() {
+        EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+        LogEventAdapter adapter = new LogEventAdapter(envDetail);
 
-		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
-		LogEventAdapter adapter = new LogEventAdapter(envDetail);
+        Throwable exception = new NullPointerException();
+        LogEvent eventWithException = LogEvent.newBuilder().exception(exception).build();
+        Throwable present = adapter.getThrowable(eventWithException);
+        Assert.assertNotNull(present);
+        Assert.assertEquals(exception, present);
 
-		StackifyError error = adapter.getStackifyError(event, exception);
-		Assert.assertEquals(envDetail, error.getEnvironmentDetail());
-		Assert.assertEquals(event.getTimestamp(), error.getOccurredEpochMillis().getTime());
-		Assert.assertNotNull(error.getServerVariables());
-		
-		ErrorItem errorItem = error.getError();
-		Assert.assertEquals(message, errorItem.getMessage());
-		Assert.assertEquals(exception.getClass().getCanonicalName(), errorItem.getErrorType());
-	}
-	
-	/**
-	 * testGetLogMsg
-	 */
-	@Test
-	public void testGetLogMsg() {
-		String level = "level";
-		String message = "message";
-		LogEvent event = LogEvent.newBuilder().level(level).message(message).build();
+        LogEvent eventWithoutException = LogEvent.newBuilder().build();
+        Throwable absent = adapter.getThrowable(eventWithoutException);
+        Assert.assertNull(absent);
+    }
 
-		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
-		LogEventAdapter adapter = new LogEventAdapter(envDetail);
+    /**
+     * testGetStackifyError
+     */
+    @Test
+    public void testGetStackifyError() {
+        String level = "level";
+        String message = "message";
+        Throwable exception = new NullPointerException();
+        LogEvent event = LogEvent.newBuilder().level(level).message(message).exception(exception).build();
 
-		StackifyError error = Mockito.mock(StackifyError.class);
-		
-		LogMsg logMsg = adapter.getLogMsg(event, error);
-		Assert.assertEquals(message, logMsg.getMsg());
-		Assert.assertEquals(error, logMsg.getEx());
-		Assert.assertEquals(event.getTimestamp(), logMsg.getEpochMs().longValue());
-		Assert.assertEquals(level, logMsg.getLevel());
-	}
-	
-	/**
-	 * testGetLogMsgWithoutLevel
-	 */
-	@Test
-	public void testGetLogMsgWithoutLevel() {
-		String message = "message";
-		LogEvent event = LogEvent.newBuilder().message(message).build();
+        EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+        LogEventAdapter adapter = new LogEventAdapter(envDetail);
 
-		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
-		LogEventAdapter adapter = new LogEventAdapter(envDetail);
+        StackifyError error = adapter.getStackifyError(event, exception);
+        Assert.assertEquals(envDetail, error.getEnvironmentDetail());
+        Assert.assertEquals(event.getTimestamp(), (long) error.getOccurredEpochMillis());
+        Assert.assertNotNull(error.getServerVariables());
 
-		StackifyError error = Mockito.mock(StackifyError.class);
-		
-		LogMsg logMsg = adapter.getLogMsg(event, error);
-		Assert.assertEquals(message, logMsg.getMsg());
-		Assert.assertEquals(error, logMsg.getEx());
-		Assert.assertEquals(event.getTimestamp(), logMsg.getEpochMs().longValue());
-		Assert.assertNull(logMsg.getLevel());
-	}
-	
-	/**
-	 * testIsErrorLevel
-	 */
-	@Test
-	public void testIsErrorLevel() {
-		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
-		LogEventAdapter adapter = new LogEventAdapter(envDetail);
-		
-		LogEvent debug = LogEvent.newBuilder().level("Debug").message("Message").build();
-		Assert.assertFalse(adapter.isErrorLevel(debug));
-		
-		LogEvent error = LogEvent.newBuilder().level("Error").message("Message").build();
-		Assert.assertTrue(adapter.isErrorLevel(error));
-		
-		LogEvent noLevel = LogEvent.newBuilder().message("Message").build();
-		Assert.assertFalse(adapter.isErrorLevel(noLevel));
-	}
-	
-	/**
-	 * testGetClassName
-	 */
-	@Test
-	public void testGetClassName() {
-		EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
-		LogEventAdapter adapter = new LogEventAdapter(envDetail);
+        ErrorItem errorItem = error.getError();
+        Assert.assertEquals(message, errorItem.getMessage());
+        Assert.assertEquals(exception.getClass().getCanonicalName(), errorItem.getErrorType());
+    }
 
-		LogEvent isStackify = LogEvent.newBuilder().className("com.stackify.api.common.log.LogBackgroundService").build();
-		Assert.assertEquals("com.stackify.api.common.log.LogBackgroundService", adapter.getClassName(isStackify));
-	}
+    /**
+     * testGetLogMsg
+     */
+    @Test
+    public void testGetLogMsg() {
+        String level = "level";
+        String message = "message";
+        LogEvent event = LogEvent.newBuilder().level(level).message(message).build();
+
+        EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+        LogEventAdapter adapter = new LogEventAdapter(envDetail);
+
+        StackifyError error = Mockito.mock(StackifyError.class);
+
+        LogMsg logMsg = adapter.getLogMsg(event, error);
+        Assert.assertEquals(message, logMsg.getMsg());
+        Assert.assertEquals(error, logMsg.getEx());
+        Assert.assertEquals(event.getTimestamp(), logMsg.getEpochMs().longValue());
+        Assert.assertEquals(level, logMsg.getLevel());
+    }
+
+    /**
+     * testGetLogMsgWithoutLevel
+     */
+    @Test
+    public void testGetLogMsgWithoutLevel() {
+        String message = "message";
+        LogEvent event = LogEvent.newBuilder().message(message).build();
+
+        EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+        LogEventAdapter adapter = new LogEventAdapter(envDetail);
+
+        StackifyError error = Mockito.mock(StackifyError.class);
+
+        LogMsg logMsg = adapter.getLogMsg(event, error);
+        Assert.assertEquals(message, logMsg.getMsg());
+        Assert.assertEquals(error, logMsg.getEx());
+        Assert.assertEquals(event.getTimestamp(), logMsg.getEpochMs().longValue());
+        Assert.assertNull(logMsg.getLevel());
+    }
+
+    /**
+     * testIsErrorLevel
+     */
+    @Test
+    public void testIsErrorLevel() {
+        EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+        LogEventAdapter adapter = new LogEventAdapter(envDetail);
+
+        LogEvent debug = LogEvent.newBuilder().level("Debug").message("Message").build();
+        Assert.assertFalse(adapter.isErrorLevel(debug));
+
+        LogEvent error = LogEvent.newBuilder().level("Error").message("Message").build();
+        Assert.assertTrue(adapter.isErrorLevel(error));
+
+        LogEvent noLevel = LogEvent.newBuilder().message("Message").build();
+        Assert.assertFalse(adapter.isErrorLevel(noLevel));
+    }
+
+    /**
+     * testGetClassName
+     */
+    @Test
+    public void testGetClassName() {
+        EnvironmentDetail envDetail = Mockito.mock(EnvironmentDetail.class);
+        LogEventAdapter adapter = new LogEventAdapter(envDetail);
+
+        LogEvent isStackify = LogEvent.newBuilder().className("com.stackify.api.common.log.LogBackgroundService").build();
+        Assert.assertEquals("com.stackify.api.common.log.LogBackgroundService", adapter.getClassName(isStackify));
+    }
 }
