@@ -17,7 +17,7 @@ Add it as a maven dependency:
 <dependency>
     <groupId>com.stackify</groupId>
     <artifactId>stackify-api-java</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.2</version>
 </dependency>
 ```
 
