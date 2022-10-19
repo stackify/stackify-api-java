@@ -90,10 +90,13 @@ public class LogAppenderTest {
 	public void testAppend() throws Exception {
 		String event = "log event";
 		Throwable t = new NullPointerException();
-		
+		StackifyError error = Mockito.mock(StackifyError.class);
+		LogMsg logMsg = Mockito.mock(LogMsg.class);
+
 		EventAdapter<String> adapter = Mockito.mock(EventAdapter.class);
 		Mockito.when(adapter.getThrowable(event)).thenReturn(t);
-		Mockito.when(adapter.getStackifyError(event, t)).thenReturn(Mockito.mock(StackifyError.class));
+		Mockito.when(adapter.getStackifyError(event, t)).thenReturn(error);
+		Mockito.when(adapter.getLogMsg(event, error)).thenReturn(logMsg);
 		
 		ErrorGovernor governor = Mockito.mock(ErrorGovernor.class);
 		Mockito.when(governor.errorShouldBeSent(Mockito.any(StackifyError.class))).thenReturn(true);
@@ -117,7 +120,7 @@ public class LogAppenderTest {
 		
 		appender.close();
 		
-		Mockito.verify(collector).addLogMsg(Mockito.any(LogMsg.class));	
+		Mockito.verify(collector).addLogMsg(logMsg);
 	}
 	
 	/**

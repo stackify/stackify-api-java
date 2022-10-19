@@ -15,12 +15,18 @@
  */
 package com.stackify.api.common.log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.stackify.api.LogMsg;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.http.HttpClient;
 import com.stackify.api.common.mask.Masker;
+import com.stackify.api.common.socket.HttpSocketClient;
+
+import org.apache.http.client.methods.HttpPost;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -33,7 +39,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
  * @author Eric Martin
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LogTransportDirect.class, HttpClient.class})
+@PrepareForTest({LogTransportDirect.class, LogTransportAgentSocket.class, HttpClient.class})
 public class LogSenderTest {
 
 	/**
@@ -42,9 +48,21 @@ public class LogSenderTest {
 	 */
 	@Test
 	public void testSend() throws Exception {
-		ObjectMapper objectMapper = Mockito.mock(ObjectMapper.class);
+		ObjectMapper objectMapper = new ObjectMapper();
 		Masker masker = Mockito.mock(Masker.class);
-		Mockito.when(objectMapper.writer()).thenReturn(Mockito.mock(ObjectWriter.class));
+		LogMsgGroup logMsgGroup = new LogMsgGroup();
+		LogMsg logMsg = new LogMsg();
+		logMsg.setMsg("test message");
+
+		List<LogMsg> logMsgList = new ArrayList<LogMsg>();
+		logMsgList.add(logMsg);
+
+		logMsgGroup.setAppName("AppName Test");
+		logMsgGroup.setMsgs(
+			logMsgList
+		);
+
+		// Mockito.when(objectMapper.writer()).thenReturn(Mockito.mock(ObjectWriter.class));
 
 		ApiConfiguration apiConfig = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").build();
 
@@ -54,6 +72,36 @@ public class LogSenderTest {
 		PowerMockito.whenNew(HttpClient.class).withAnyArguments().thenReturn(httpClient);
 		PowerMockito.when(httpClient.post(Mockito.anyString(), (byte[]) Mockito.any())).thenReturn("");
 
-		sender.send(Mockito.mock(LogMsgGroup.class));
+		sender.send(logMsgGroup);
+	}
+
+	/**
+	 * testSend
+	 * @throws Exception
+	 */
+	@Test
+	public void testSendSocket() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+		Masker masker = Mockito.mock(Masker.class);
+		LogMsgGroup logMsgGroup = new LogMsgGroup();
+		LogMsg logMsg = new LogMsg();
+		logMsg.setMsg("test message");
+
+		List<LogMsg> logMsgList = new ArrayList<LogMsg>();
+		logMsgList.add(logMsg);
+
+		logMsgGroup.setAppName("AppName Test");
+		logMsgGroup.setMsgs(
+			logMsgList
+		);
+
+		ApiConfiguration apiConfig = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").build();
+
+		HttpSocketClient httpSocketClient = PowerMockito.spy(new HttpSocketClient("testSocket"));
+		PowerMockito.whenNew(HttpSocketClient.class).withAnyArguments().thenReturn(httpSocketClient);
+		PowerMockito.doNothing().when(httpSocketClient).send(Mockito.any(HttpPost.class));
+
+		LogTransportAgentSocket sender = new LogTransportAgentSocket(apiConfig, masker, true);
+		sender.send(logMsgGroup);
 	}
 }

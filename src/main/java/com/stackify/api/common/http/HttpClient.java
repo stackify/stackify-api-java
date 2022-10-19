@@ -15,9 +15,13 @@
  */
 package com.stackify.api.common.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.util.CharStreams;
 import com.stackify.api.common.util.Preconditions;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -55,6 +59,8 @@ public class HttpClient {
 	 * HTTP proxy
 	 */
 	private final Proxy proxy;
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(HttpClient.class);
 
 	/**
 	 * Constructor
@@ -107,6 +113,15 @@ public class HttpClient {
 			URL url = new URL(apiConfig.getApiUrl() + path);
 
 			// request properties
+			if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "#HttpClient #Post Sending request to {}/{} - Body: {}",
+					apiConfig.getApiUrl(),
+					path,
+                    (new ObjectMapper())
+                        .writeValueAsString(jsonBytes)
+                );
+            }
 
 			connection = (HttpURLConnection) url.openConnection(proxy);
 			connection.setDoInput(true);

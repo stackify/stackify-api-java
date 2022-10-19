@@ -20,6 +20,10 @@ import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.http.HttpClient;
 import com.stackify.api.common.mask.Masker;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,6 +52,8 @@ public class LogTransportDirect implements LogTransport {
     private final ObjectMapper objectMapper;
 
     private final LogTransportPreProcessor logTransportPreProcessor;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogTransportAgentSocket.class);
 
     /**
      * Default constructor
@@ -84,6 +90,14 @@ public class LogTransportDirect implements LogTransport {
         // post to stackify
 
         try {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "#Log #Transport #Direct Sending request to {} - Body: {}",
+                    LOG_SAVE_PATH,
+                    objectMapper
+                        .writeValueAsString(group)
+                );
+            }
             httpClient.post(LOG_SAVE_PATH, jsonBytes, true);
         } catch (Exception e) {
             log.info("Queueing logs for retransmission due to Exception");

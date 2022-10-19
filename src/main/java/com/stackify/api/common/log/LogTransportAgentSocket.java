@@ -15,6 +15,7 @@
  */
 package com.stackify.api.common.log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.mask.Masker;
@@ -25,6 +26,8 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Log Transport - Agent Socket
@@ -45,6 +48,11 @@ public class LogTransportAgentSocket implements LogTransport {
     private final LogTransportPreProcessor logTransportPreProcessor;
 
     private final HttpSocketClient httpSocketClient;
+
+    /**
+	 * The transport logger
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(LogTransportAgentSocket.class);
 
     public LogTransportAgentSocket(@NonNull final ApiConfiguration apiConfig,
                                    Masker masker,
@@ -73,6 +81,16 @@ public class LogTransportAgentSocket implements LogTransport {
             HttpPost httpPost = new HttpPost(URI_PREFIX + "/log");
             httpPost.setHeader("Content-Type", "application/x-protobuf");
             httpPost.setEntity(new ByteArrayEntity(logGroup.toByteArray()));
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "#Log #Transport #Socket Sending request to {} - Body: {}",
+                    httpPost.getURI(),
+                    (new ObjectMapper())
+                        .writeValueAsString(group)
+                );
+            }
+
             httpSocketClient.send(httpPost);
         } catch (Throwable e) {
             log.info("Queueing logs for retransmission due to Exception");
