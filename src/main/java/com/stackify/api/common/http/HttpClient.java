@@ -36,6 +36,7 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * HttpClient
+ * 
  * @author Eric Martin
  */
 public class HttpClient {
@@ -64,25 +65,25 @@ public class HttpClient {
 
 	/**
 	 * Constructor
+	 * 
 	 * @param apiConfig API configuration
 	 */
-    public HttpClient(final ApiConfiguration apiConfig) {
-        Preconditions.checkNotNull(apiConfig);
-        this.apiConfig = apiConfig;
+	public HttpClient(final ApiConfiguration apiConfig) {
+		Preconditions.checkNotNull(apiConfig);
+		this.apiConfig = apiConfig;
 
-        if (apiConfig.getHttpProxyHost() != null &&
-                !apiConfig.getHttpProxyHost().isEmpty() &&
-                apiConfig.getHttpProxyPort() != null &&
-                !apiConfig.getHttpProxyPort().isEmpty()) {
-            this.proxy = HttpProxy.build(apiConfig.getHttpProxyHost(), apiConfig.getHttpProxyPort());
-        } else {
-            this.proxy = HttpProxy.fromSystemProperties();
-        }
-    }
+		if (apiConfig.getHttpProxyHost() != null && !apiConfig.getHttpProxyHost().isEmpty()
+				&& apiConfig.getHttpProxyPort() != null && !apiConfig.getHttpProxyPort().isEmpty()) {
+			this.proxy = HttpProxy.build(apiConfig.getHttpProxyHost(), apiConfig.getHttpProxyPort());
+		} else {
+			this.proxy = HttpProxy.fromSystemProperties();
+		}
+	}
 
 	/**
 	 * Posts data to stackify
-	 * @param path REST path
+	 * 
+	 * @param path      REST path
 	 * @param jsonBytes JSON bytes
 	 * @return Response string
 	 * @throws IOException
@@ -94,14 +95,16 @@ public class HttpClient {
 
 	/**
 	 * Posts data to stackify
-	 * @param path REST path
+	 * 
+	 * @param path      REST path
 	 * @param jsonBytes JSON bytes
-	 * @param gzip True if the post should be gzipped, false otherwise
+	 * @param gzip      True if the post should be gzipped, false otherwise
 	 * @return Response string
 	 * @throws IOException
 	 * @throws HttpException
 	 */
-	public String post(final String path, final byte[] jsonBytes, final boolean gzip) throws IOException, HttpException {
+	public String post(final String path, final byte[] jsonBytes, final boolean gzip)
+			throws IOException, HttpException {
 		Preconditions.checkNotNull(path);
 		Preconditions.checkArgument(!path.isEmpty());
 		Preconditions.checkNotNull(jsonBytes);
@@ -114,13 +117,8 @@ public class HttpClient {
 
 			// request properties
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(
-					"#HttpClient #Post Sending request to {}/{} - Body: {}",
-					apiConfig.getApiUrl(),
-					path,
-					(new ObjectMapper())
-						.writeValueAsString(jsonBytes)
-				);
+				LOGGER.debug("#HttpClient #Post Sending request to {}/{} - Body: {}", apiConfig.getApiUrl(), path,
+						(new ObjectMapper()).writeValueAsString(jsonBytes));
 			}
 
 			connection = (HttpURLConnection) url.openConnection(proxy);
@@ -187,6 +185,7 @@ public class HttpClient {
 
 	/**
 	 * Reads all remaining contents from the stream and closes it
+	 * 
 	 * @param stream The stream
 	 * @return The contents of the stream
 	 * @throws IOException

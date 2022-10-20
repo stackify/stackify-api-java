@@ -28,8 +28,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Log Transport - Direct
- * Send log messages directly to Stackify
+ * Log Transport - Direct Send log messages directly to Stackify
  *
  * @author Eric Martin
  */
@@ -64,10 +63,8 @@ public class LogTransportDirect implements LogTransport {
      * @param apiConfig    API configuration
      * @param objectMapper JSON object mapper
      */
-    public LogTransportDirect(@NonNull final ApiConfiguration apiConfig,
-                              @NonNull final ObjectMapper objectMapper,
-                              Masker masker,
-                              boolean skipJson) {
+    public LogTransportDirect(@NonNull final ApiConfiguration apiConfig, @NonNull final ObjectMapper objectMapper,
+            Masker masker, boolean skipJson) {
         this.apiConfig = apiConfig;
         this.objectMapper = objectMapper;
         this.logTransportPreProcessor = new LogTransportPreProcessor(masker, skipJson);
@@ -94,12 +91,8 @@ public class LogTransportDirect implements LogTransport {
 
         try {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "#Log #Transport #Direct Sending request to {} - Body: {}",
-                    LOG_SAVE_PATH,
-                    objectMapper
-                        .writeValueAsString(group)
-                );
+                LOGGER.debug("#Log #Transport #Direct Sending request to {} - Body: {}", LOG_SAVE_PATH,
+                        objectMapper.writeValueAsString(group));
             }
             httpClient.post(LOG_SAVE_PATH, jsonBytes, true);
         } catch (Exception e) {

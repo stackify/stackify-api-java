@@ -36,14 +36,16 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * LogSender JUnit Test
+ * 
  * @author Eric Martin
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LogTransportDirect.class, LogTransportAgentSocket.class, HttpClient.class})
+@PrepareForTest({ LogTransportDirect.class, LogTransportAgentSocket.class, HttpClient.class })
 public class LogSenderTest {
 
 	/**
 	 * testSend
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -58,9 +60,7 @@ public class LogSenderTest {
 		logMsgList.add(logMsg);
 
 		logMsgGroup.setAppName("AppName Test");
-		logMsgGroup.setMsgs(
-			logMsgList
-		);
+		logMsgGroup.setMsgs(logMsgList);
 
 		// Mockito.when(objectMapper.writer()).thenReturn(Mockito.mock(ObjectWriter.class));
 
@@ -77,6 +77,7 @@ public class LogSenderTest {
 
 	/**
 	 * testSend
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -91,9 +92,7 @@ public class LogSenderTest {
 		logMsgList.add(logMsg);
 
 		logMsgGroup.setAppName("AppName Test");
-		logMsgGroup.setMsgs(
-			logMsgList
-		);
+		logMsgGroup.setMsgs(logMsgList);
 
 		ApiConfiguration apiConfig = ApiConfiguration.newBuilder().apiUrl("url").apiKey("key").build();
 

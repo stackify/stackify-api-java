@@ -88,10 +88,8 @@ public class LogAppender<T> implements Closeable {
      *
      * @param logger Logger project name
      */
-    public LogAppender(@NonNull final String logger,
-                       @NonNull final EventAdapter<T> eventAdapter,
-                       final Masker masker,
-                       final boolean skipJson) {
+    public LogAppender(@NonNull final String logger, @NonNull final EventAdapter<T> eventAdapter, final Masker masker,
+            final boolean skipJson) {
         this.logger = logger;
         this.eventAdapter = eventAdapter;
         this.masker = masker;
@@ -103,9 +101,7 @@ public class LogAppender<T> implements Closeable {
      *
      * @param logger Logger project name
      */
-    public LogAppender(@NonNull final String logger,
-                       @NonNull final EventAdapter<T> eventAdapter,
-                       final Masker masker) {
+    public LogAppender(@NonNull final String logger, @NonNull final EventAdapter<T> eventAdapter, final Masker masker) {
         this(logger, eventAdapter, masker, false);
     }
 
