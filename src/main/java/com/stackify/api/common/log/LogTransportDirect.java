@@ -53,6 +53,9 @@ public class LogTransportDirect implements LogTransport {
 
     private final LogTransportPreProcessor logTransportPreProcessor;
 
+    /**
+     * The transport logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(LogTransportAgentSocket.class);
 
     /**

@@ -40,9 +40,9 @@ import java.io.IOException;
 public class LogAppender<T> implements Closeable {
 
     /**
-	 * The appender logger
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LogAppender.class);
+     * The appender logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogAppender.class);
 
     /**
      * Internal package prefix

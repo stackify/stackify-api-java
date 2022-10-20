@@ -114,14 +114,14 @@ public class HttpClient {
 
 			// request properties
 			if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "#HttpClient #Post Sending request to {}/{} - Body: {}",
+				LOGGER.debug(
+					"#HttpClient #Post Sending request to {}/{} - Body: {}",
 					apiConfig.getApiUrl(),
 					path,
-                    (new ObjectMapper())
-                        .writeValueAsString(jsonBytes)
-                );
-            }
+					(new ObjectMapper())
+						.writeValueAsString(jsonBytes)
+				);
+			}
 
 			connection = (HttpURLConnection) url.openConnection(proxy);
 			connection.setDoInput(true);

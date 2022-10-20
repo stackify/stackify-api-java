@@ -50,9 +50,9 @@ public class LogTransportAgentSocket implements LogTransport {
     private final HttpSocketClient httpSocketClient;
 
     /**
-	 * The transport logger
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(LogTransportAgentSocket.class);
+     * The transport logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogTransportAgentSocket.class);
 
     public LogTransportAgentSocket(@NonNull final ApiConfiguration apiConfig,
                                    Masker masker,
