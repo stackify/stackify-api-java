@@ -36,7 +36,7 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * HttpClient
- * 
+ *
  * @author Eric Martin
  */
 public class HttpClient {
@@ -65,7 +65,7 @@ public class HttpClient {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param apiConfig API configuration
 	 */
 	public HttpClient(final ApiConfiguration apiConfig) {
@@ -82,7 +82,7 @@ public class HttpClient {
 
 	/**
 	 * Posts data to stackify
-	 * 
+	 *
 	 * @param path      REST path
 	 * @param jsonBytes JSON bytes
 	 * @return Response string
@@ -95,7 +95,7 @@ public class HttpClient {
 
 	/**
 	 * Posts data to stackify
-	 * 
+	 *
 	 * @param path      REST path
 	 * @param jsonBytes JSON bytes
 	 * @param gzip      True if the post should be gzipped, false otherwise
@@ -185,7 +185,7 @@ public class HttpClient {
 
 	/**
 	 * Reads all remaining contents from the stream and closes it
-	 * 
+	 *
 	 * @param stream The stream
 	 * @return The contents of the stream
 	 * @throws IOException

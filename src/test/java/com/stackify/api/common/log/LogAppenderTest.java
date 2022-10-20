@@ -30,7 +30,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * LogAppender JUnit Test
- * 
+ *
  * @author Eric Martin
  */
 @RunWith(PowerMockRunner.class)
@@ -39,7 +39,7 @@ public class LogAppenderTest {
 
 	/**
 	 * testActivate
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -63,7 +63,7 @@ public class LogAppenderTest {
 
 	/**
 	 * testClose
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -89,7 +89,7 @@ public class LogAppenderTest {
 
 	/**
 	 * testAppend
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -132,7 +132,7 @@ public class LogAppenderTest {
 
 	/**
 	 * testAppendWithoutActivate
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -155,7 +155,7 @@ public class LogAppenderTest {
 
 	/**
 	 * testAppendInternalEvent
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test

@@ -36,7 +36,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 /**
  * LogSender JUnit Test
- * 
+ *
  * @author Eric Martin
  */
 @RunWith(PowerMockRunner.class)
@@ -45,7 +45,7 @@ public class LogSenderTest {
 
 	/**
 	 * testSend
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -77,7 +77,7 @@ public class LogSenderTest {
 
 	/**
 	 * testSend
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
