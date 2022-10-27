@@ -15,6 +15,7 @@
  */
 package com.stackify.api.common.log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stackify.api.LogMsgGroup;
 import com.stackify.api.common.ApiConfiguration;
 import com.stackify.api.common.mask.Masker;
@@ -25,10 +26,12 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Log Transport - Agent Socket
- * Send log messages to Stackify Agent via Domain Socket
+ * Log Transport - Agent Socket Send log messages to Stackify Agent via Domain
+ * Socket
  *
  * @author Darin Howard
  */
@@ -46,9 +49,12 @@ public class LogTransportAgentSocket implements LogTransport {
 
     private final HttpSocketClient httpSocketClient;
 
-    public LogTransportAgentSocket(@NonNull final ApiConfiguration apiConfig,
-                                   Masker masker,
-                                   boolean skipJson) {
+    /**
+     * The transport logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogTransportAgentSocket.class);
+
+    public LogTransportAgentSocket(@NonNull final ApiConfiguration apiConfig, Masker masker, boolean skipJson) {
         this.apiConfig = apiConfig;
         this.logTransportPreProcessor = new LogTransportPreProcessor(masker, skipJson);
         this.httpSocketClient = new HttpSocketClient(apiConfig.getAgentSocketPath());
@@ -73,6 +79,12 @@ public class LogTransportAgentSocket implements LogTransport {
             HttpPost httpPost = new HttpPost(URI_PREFIX + "/log");
             httpPost.setHeader("Content-Type", "application/x-protobuf");
             httpPost.setEntity(new ByteArrayEntity(logGroup.toByteArray()));
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("#Log #Transport #Socket Sending request to {} - Body: {}", httpPost.getURI(),
+                        (new ObjectMapper()).writeValueAsString(group));
+            }
+
             httpSocketClient.send(httpPost);
         } catch (Throwable e) {
             log.info("Queueing logs for retransmission due to Exception");

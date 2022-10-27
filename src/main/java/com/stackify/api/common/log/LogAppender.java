@@ -23,6 +23,10 @@ import com.stackify.api.common.AppIdentityService;
 import com.stackify.api.common.error.ErrorGovernor;
 import com.stackify.api.common.mask.Masker;
 import com.stackify.api.common.util.Preconditions;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lombok.NonNull;
 
 import java.io.Closeable;
@@ -34,6 +38,11 @@ import java.io.IOException;
  * @author Eric Martin
  */
 public class LogAppender<T> implements Closeable {
+
+    /**
+     * The appender logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogAppender.class);
 
     /**
      * Internal package prefix
@@ -79,10 +88,8 @@ public class LogAppender<T> implements Closeable {
      *
      * @param logger Logger project name
      */
-    public LogAppender(@NonNull final String logger,
-                       @NonNull final EventAdapter<T> eventAdapter,
-                       final Masker masker,
-                       final boolean skipJson) {
+    public LogAppender(@NonNull final String logger, @NonNull final EventAdapter<T> eventAdapter, final Masker masker,
+            final boolean skipJson) {
         this.logger = logger;
         this.eventAdapter = eventAdapter;
         this.masker = masker;
@@ -94,9 +101,7 @@ public class LogAppender<T> implements Closeable {
      *
      * @param logger Logger project name
      */
-    public LogAppender(@NonNull final String logger,
-                       @NonNull final EventAdapter<T> eventAdapter,
-                       final Masker masker) {
+    public LogAppender(@NonNull final String logger, @NonNull final EventAdapter<T> eventAdapter, final Masker masker) {
         this(logger, eventAdapter, masker, false);
     }
 
@@ -202,6 +207,10 @@ public class LogAppender<T> implements Closeable {
         }
 
         LogMsg logMsg = eventAdapter.getLogMsg(event, error);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.info("#Log #Appender #Template Logging mesage: {}", event);
+        }
 
         collector.addLogMsg(logMsg);
     }

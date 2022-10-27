@@ -47,16 +47,16 @@
     <properties>
         <java.version>1.8</java.version>
         <slf4j-api.version>1.7.28</slf4j-api.version>
-        <jackson.version>2.9.9</jackson.version>
-        <jackson-databind.version>2.9.10.5</jackson-databind.version>
-        <httpclient.version>4.5.9</httpclient.version>
+        <jackson.version>2.12.7</jackson.version>
+        <jackson-databind.version>2.12.6.1</jackson-databind.version>
+        <httpclient.version>4.5.13</httpclient.version>
         <junixsocket.version>2.2.0</junixsocket.version>
         <failsafe.version>2.3.0</failsafe.version>
-        <protobuf.version>3.9.1</protobuf.version>
+        <protobuf.version>3.16.3</protobuf.version>
         <lombok.version>1.18.8</lombok.version>
-        <junit.version>4.11</junit.version>
-        <mockito.version>1.9.5</mockito.version>
-        <powermock.version>1.5.6</powermock.version>
+        <junit.version>4.13.1</junit.version>
+        <mockito.version>2.8.9</mockito.version>
+        <powermock.version>1.7.4</powermock.version>
     </properties>
 
     <dependencies>
@@ -167,7 +167,7 @@
 
         <dependency>
             <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
+            <artifactId>powermock-api-mockito2</artifactId>
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
